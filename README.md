@@ -9,10 +9,11 @@ Site : https://jvtechsolutions60-a11y.github.io/lan-jeux/
 Tout est dans `games.js`, une ligne par jeu :
 
 ```js
-["Nom du jeu", joueurs_min, joueurs_max, "types", gratuit, "modes", "lien"],
+["Nom du jeu", joueurs_min, joueurs_max, "types", gratuit, "modes", lien, "description"],
 ```
 
 - types : `tir strategie course party coop combat survie sport rpg plateforme horreur societe moba` (plusieurs séparés par un espace)
 - gratuit : `1` gratuit, `0` payant
 - modes : `l` réseau local (LAN), `e` même écran, `o` internet requis
-- lien : vide pour une recherche Steam automatique, sinon l'adresse du site officiel
+- lien : le numéro Steam du jeu (ex. `730` pour Counter-Strike 2, visible dans l'adresse de sa page Steam) pour afficher son image et ouvrir sa page ; sinon l'adresse du site officiel entre guillemets, ou `""` pour une simple recherche Steam
+- description : une phrase courte

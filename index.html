@@ -101,14 +101,55 @@ header p { margin: 6px 0 0; color: var(--muted); max-width: 60ch; }
 .price.paid { background: var(--paid-bg); color: var(--paid); }
 .modes { font-size: 12.5px; color: var(--muted); }
 .empty { color: var(--muted); padding: 32px 0; text-align: center; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.search { flex: 1 1 240px; min-width: 0; font: 500 16px/1.2 var(--body); color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 11px 14px; }
+.search:focus-visible, .sort:focus-visible, .dice:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.sort { font: 500 14px var(--body); color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 11px 10px; }
+.dice { font: 700 15px/1 var(--display); color: var(--accent-fg); background: var(--accent); border: 0; border-radius: 8px; padding: 12px 16px; cursor: pointer; }
+.dice:hover { filter: brightness(1.06); }
+.game { padding: 0; overflow: hidden; gap: 0; }
+.dice:disabled { opacity: .5; cursor: default; }
+.game .body { padding: 12px 14px 14px; display: grid; gap: 8px; }
+.cover { aspect-ratio: 460 / 215; max-width: 100%; width: 100%; background: var(--chip); display: grid; place-items: center; position: relative; overflow: hidden; }
+.cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.cover .initials { font: 700 28px/1 var(--display); color: var(--muted); letter-spacing: .04em; }
+.desc { margin: 0; font-size: 13.5px; color: var(--muted); }
+.pick { background: var(--panel); border: 2px solid var(--accent); border-radius: 10px; padding: 14px; display: grid; gap: 12px; }
+.pick-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.pick-head strong { font: 700 18px/1.2 var(--display); }
+.pick-actions { display: flex; gap: 8px; }
+.pick .game { max-width: 420px; }
+.ghost { background: none; border: 1px solid var(--line); color: var(--fg); border-radius: 6px; padding: 8px 12px; font: 500 14px var(--body); cursor: pointer; }
+.ghost:focus-visible { outline: 2px solid var(--accent); }
 footer { color: var(--muted); font-size: 13px; }
 </style>
 
 <div class="wrap">
   <header>
     <h1>LAN <span>&amp;</span> Jeux</h1>
-    <p>Choisissez combien vous êtes et le type de jeu : la liste s'adapte. Cliquez sur un jeu pour ouvrir sa page.</p>
+    <p>Choisissez combien vous êtes et le type de jeu : la liste s'adapte. Pas d'idée ? Lancez le dé. Cliquez sur un jeu pour ouvrir sa page.</p>
   </header>
+
+  <div class="toolbar">
+    <input class="search" id="search" type="search" placeholder="Rechercher un jeu…" aria-label="Rechercher un jeu par son nom" autocomplete="off">
+    <select class="sort" id="sort" aria-label="Trier">
+      <option value="name">Nom (A → Z)</option>
+      <option value="max">Le plus de joueurs</option>
+      <option value="free">Gratuits d'abord</option>
+    </select>
+    <button class="dice" id="dice" type="button">🎲 Jeu au hasard</button>
+  </div>
+
+  <section class="pick" id="pick" hidden aria-live="polite">
+    <div class="pick-head">
+      <strong>Ce soir, on joue à…</strong>
+      <div class="pick-actions">
+        <button class="ghost" id="reroll" type="button">Relancer</button>
+        <button class="ghost" id="close-pick" type="button">Fermer</button>
+      </div>
+    </div>
+    <div id="pick-card"></div>
+  </section>
 
   <section class="filters" aria-label="Filtres">
     <div class="group">
@@ -137,7 +178,7 @@ footer { color: var(--muted); font-size: 13px; }
   </div>
   <div class="grid" id="grid"></div>
 
-  <footer>Les nombres de joueurs indiqués sont ceux du multijoueur. Un jeu marqué « Internet » demande une connexion, même en LAN.</footer>
+  <footer>Images et pages des jeux : Steam. Les nombres de joueurs indiqués sont ceux du multijoueur. Un jeu marqué « Internet » demande une connexion, même en LAN.</footer>
 </div>
 
 <script src="games.js"></script>
@@ -150,12 +191,20 @@ const TYPES = {
 const MODES = { l: "LAN", e: "Même écran", o: "Internet" };
 const PLAYERS = [["2", 2], ["3", 3], ["4", 4], ["5 et +", 5]];
 
-const games = (window.GAMES || []).map(([name, min, max, types, free, modes, url]) => ({
-  name, min, max, types: types.split(" "), free: !!free, modes: modes.split(""),
-  url: url || "https://store.steampowered.com/search/?term=" + encodeURIComponent(name)
-})).sort((a, b) => a.name.localeCompare(b.name, "fr"));
+const norm = t => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+const games = (window.GAMES || []).map(([name, min, max, types, free, modes, link, desc]) => ({
+  name, min, max, desc: desc || "", types: types.split(" "), free: !!free, modes: modes.split(""),
+  appid: typeof link === "number" ? link : null, key: norm(name),
+  url: typeof link === "number" ? "https://store.steampowered.com/app/" + link + "/"
+    : link || "https://store.steampowered.com/search/?term=" + encodeURIComponent(name)
+}));
 
-const state = { players: null, types: new Set(), price: null, offline: false };
+const state = { players: null, types: new Set(), price: null, offline: false, q: "", sort: "name" };
+const SORTS = {
+  name: (a, b) => a.name.localeCompare(b.name, "fr"),
+  max: (a, b) => b.max - a.max || a.name.localeCompare(b.name, "fr"),
+  free: (a, b) => (b.free - a.free) || a.name.localeCompare(b.name, "fr")
+};
 
 function chip(label, pressed, onClick, big) {
   const b = document.createElement("button");
@@ -194,35 +243,83 @@ function matches(g) {
   if (state.price === "free" && !g.free) return false;
   if (state.price === "paid" && g.free) return false;
   if (state.offline && !g.modes.some(m => m === "l" || m === "e")) return false;
+  if (state.q && !g.key.includes(state.q)) return false;
   return true;
 }
 
+function cover(g) {
+  const box = document.createElement("div"); box.className = "cover";
+  const initials = document.createElement("span"); initials.className = "initials";
+  initials.textContent = g.name.replace(/[^A-Za-z0-9 ]/g, "").split(" ").filter(Boolean).slice(0, 2).map(w => w[0]).join("").toUpperCase();
+  box.append(initials);
+  if (g.appid) {
+    const img = document.createElement("img");
+    img.alt = ""; img.loading = "lazy"; img.decoding = "async";
+    const urls = [
+      "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/" + g.appid + "/header.jpg",
+      "https://cdn.cloudflare.steamstatic.com/steam/apps/" + g.appid + "/header.jpg"
+    ];
+    let i = 0;
+    img.onerror = () => { i++; if (i < urls.length) img.src = urls[i]; else img.remove(); };
+    img.onload = () => initials.remove();
+    img.src = urls[0];
+    box.append(img);
+  }
+  return box;
+}
+
+function card(g) {
+  const a = document.createElement("a");
+  a.className = "game"; a.href = g.url; a.target = "_blank"; a.rel = "noopener";
+  const range = g.min === g.max ? g.min + " j." : g.min + "–" + g.max + " j.";
+  const body = document.createElement("div"); body.className = "body";
+  body.innerHTML = `<div class="top"><h2></h2><span class="players">${range}</span></div>
+    <p class="desc"></p>
+    <div class="tags"><span class="tag price ${g.free ? "free" : "paid"}">${g.free ? "Gratuit" : "Payant"}</span>
+    ${g.types.map(t => `<span class="tag">${TYPES[t]}</span>`).join("")}</div>
+    <div class="modes">${g.modes.map(m => MODES[m]).join(" · ")}</div>`;
+  body.querySelector("h2").textContent = g.name;
+  const d = body.querySelector(".desc");
+  if (g.desc) d.textContent = g.desc; else d.remove();
+  a.append(cover(g), body);
+  return a;
+}
+
+let current = [];
 function renderGrid() {
-  const list = games.filter(matches);
+  current = games.filter(matches).sort(SORTS[state.sort]);
   const grid = document.getElementById("grid"); grid.replaceChildren();
   document.getElementById("count").textContent =
-    list.length + (list.length > 1 ? " jeux" : " jeu");
-  if (!list.length) {
+    current.length + (current.length > 1 ? " jeux" : " jeu");
+  document.getElementById("dice").disabled = !current.length;
+  if (!current.length) {
     const e = document.createElement("p"); e.className = "empty";
     e.textContent = "Aucun jeu ne correspond. Retirez un filtre pour élargir la recherche.";
     grid.append(e); return;
   }
-  for (const g of list) {
-    const a = document.createElement("a");
-    a.className = "game"; a.href = g.url; a.target = "_blank"; a.rel = "noopener";
-    const range = g.min === g.max ? g.min + " j." : g.min + "–" + g.max + " j.";
-    a.innerHTML = `<div class="top"><h2></h2><span class="players">${range}</span></div>
-      <div class="tags"><span class="tag price ${g.free ? "free" : "paid"}">${g.free ? "Gratuit" : "Payant"}</span>
-      ${g.types.map(t => `<span class="tag">${TYPES[t]}</span>`).join("")}</div>
-      <div class="modes">${g.modes.map(m => MODES[m]).join(" · ")}</div>`;
-    a.querySelector("h2").textContent = g.name;
-    grid.append(a);
-  }
+  const frag = document.createDocumentFragment();
+  for (const g of current) frag.append(card(g));
+  grid.append(frag);
 }
+
+function roll() {
+  if (!current.length) return;
+  const g = current[Math.floor(Math.random() * current.length)];
+  const box = document.getElementById("pick");
+  document.getElementById("pick-card").replaceChildren(card(g));
+  box.hidden = false;
+  box.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "nearest" });
+}
+document.getElementById("dice").addEventListener("click", roll);
+document.getElementById("reroll").addEventListener("click", roll);
+document.getElementById("close-pick").addEventListener("click", () => { document.getElementById("pick").hidden = true; });
+document.getElementById("search").addEventListener("input", e => { state.q = norm(e.target.value.trim()); renderGrid(); });
+document.getElementById("sort").addEventListener("change", e => { state.sort = e.target.value; renderGrid(); });
 
 function update() { renderFilters(); renderGrid(); }
 document.getElementById("reset").addEventListener("click", () => {
-  state.players = null; state.types.clear(); state.price = null; state.offline = false; update();
+  state.players = null; state.types.clear(); state.price = null; state.offline = false;
+  state.q = ""; document.getElementById("search").value = ""; update();
 });
 update();
 </script>
