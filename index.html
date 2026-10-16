@@ -1,0 +1,228 @@
+<!doctype html>
+<title>LAN &amp; Jeux</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout : bandeau de filtres en haut, grille de fiches de jeux dessous */
+:root {
+  --bg: #eef1f5;
+  --panel: #ffffff;
+  --fg: #16202c;
+  --muted: #5a6778;
+  --line: #d4dbe4;
+  --accent: #e0821c;
+  --accent-fg: #1a1104;
+  --chip: #e3e8ef;
+  --free: #1f7a4d;
+  --free-bg: #dcf1e5;
+  --paid: #5a4bb0;
+  --paid-bg: #e6e2f8;
+  --display: "Chakra Petch", "Segoe UI", system-ui, sans-serif;
+  --body: "Figtree", system-ui, -apple-system, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f141b; --panel: #171e28; --fg: #e6ebf2; --muted: #93a0b2; --line: #2a3443;
+    --accent: #f29a38; --accent-fg: #1a1104; --chip: #222b38;
+    --free: #6fd39e; --free-bg: #173326; --paid: #b3a8ff; --paid-bg: #272246;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f141b; --panel: #171e28; --fg: #e6ebf2; --muted: #93a0b2; --line: #2a3443;
+  --accent: #f29a38; --accent-fg: #1a1104; --chip: #222b38;
+  --free: #6fd39e; --free-bg: #173326; --paid: #b3a8ff; --paid-bg: #272246;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg); color: var(--fg);
+  font: 15px/1.5 var(--body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 24px 48px;
+}
+.wrap { max-width: 1100px; margin: 0 auto; display: grid; gap: 24px; }
+header h1 {
+  font: 700 clamp(28px, 5vw, 40px)/1.1 var(--display);
+  margin: 0; letter-spacing: .01em; text-wrap: balance;
+}
+header h1 span { color: var(--accent); }
+header p { margin: 6px 0 0; color: var(--muted); max-width: 60ch; }
+
+.filters {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+  padding: 18px; display: grid; gap: 16px;
+}
+.group { display: grid; gap: 8px; }
+.label {
+  font: 600 12px/1 var(--body); text-transform: uppercase; letter-spacing: .08em; color: var(--muted);
+}
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  font: 500 14px/1 var(--body); color: var(--fg);
+  background: var(--chip); border: 1px solid transparent; border-radius: 6px;
+  padding: 9px 14px; cursor: pointer;
+}
+.chip.big { font: 700 18px/1 var(--display); padding: 10px 18px; min-width: 52px; }
+.chip:hover { border-color: var(--line); }
+.chip[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); }
+.chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.row { display: flex; flex-wrap: wrap; gap: 24px; }
+.row > .group { min-width: 0; }
+
+.summary { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; }
+.count { font: 700 20px/1.2 var(--display); }
+.reset { background: none; border: 0; color: var(--accent); font: 600 14px var(--body); cursor: pointer; padding: 4px 0; }
+.reset:focus-visible { outline: 2px solid var(--accent); }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; }
+.game {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+  padding: 14px; display: grid; gap: 10px; align-content: start; min-width: 0;
+  color: inherit; text-decoration: none;
+}
+.game:hover { border-color: var(--accent); }
+.game:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.game h2 { font: 600 16px/1.3 var(--body); margin: 0; overflow-wrap: anywhere; }
+.top { display: flex; justify-content: space-between; align-items: start; gap: 10px; }
+.players { font: 500 13px/1 var(--mono); font-variant-numeric: tabular-nums; color: var(--muted); white-space: nowrap; padding-top: 3px; }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag { font: 500 12px/1 var(--body); padding: 5px 8px; border-radius: 4px; background: var(--chip); color: var(--muted); }
+.price { font-weight: 600; }
+.price.free { background: var(--free-bg); color: var(--free); }
+.price.paid { background: var(--paid-bg); color: var(--paid); }
+.modes { font-size: 12.5px; color: var(--muted); }
+.empty { color: var(--muted); padding: 32px 0; text-align: center; }
+footer { color: var(--muted); font-size: 13px; }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>LAN <span>&amp;</span> Jeux</h1>
+    <p>Choisissez combien vous êtes et le type de jeu : la liste s'adapte. Cliquez sur un jeu pour ouvrir sa page.</p>
+  </header>
+
+  <section class="filters" aria-label="Filtres">
+    <div class="group">
+      <div class="label" id="lbl-players">Nombre de joueurs</div>
+      <div class="chips" id="players" role="group" aria-labelledby="lbl-players"></div>
+    </div>
+    <div class="group">
+      <div class="label" id="lbl-types">Type de jeu</div>
+      <div class="chips" id="types" role="group" aria-labelledby="lbl-types"></div>
+    </div>
+    <div class="row">
+      <div class="group">
+        <div class="label" id="lbl-price">Prix</div>
+        <div class="chips" id="price" role="group" aria-labelledby="lbl-price"></div>
+      </div>
+      <div class="group">
+        <div class="label" id="lbl-net">Connexion</div>
+        <div class="chips" id="net" role="group" aria-labelledby="lbl-net"></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="summary">
+    <div class="count" id="count" aria-live="polite"></div>
+    <button class="reset" id="reset" type="button">Tout effacer</button>
+  </div>
+  <div class="grid" id="grid"></div>
+
+  <footer>Les nombres de joueurs indiqués sont ceux du multijoueur. Un jeu marqué « Internet » demande une connexion, même en LAN.</footer>
+</div>
+
+<script src="games.js"></script>
+<script>
+const TYPES = {
+  tir: "Tir", strategie: "Stratégie", course: "Course", party: "Party game", coop: "Coopération",
+  combat: "Combat", survie: "Survie / Bac à sable", sport: "Sport", rpg: "RPG / Action",
+  plateforme: "Plateforme / Puzzle", horreur: "Horreur", societe: "Société / Cartes", moba: "MOBA"
+};
+const MODES = { l: "LAN", e: "Même écran", o: "Internet" };
+const PLAYERS = [["2", 2], ["3", 3], ["4", 4], ["5 et +", 5]];
+
+const games = (window.GAMES || []).map(([name, min, max, types, free, modes, url]) => ({
+  name, min, max, types: types.split(" "), free: !!free, modes: modes.split(""),
+  url: url || "https://store.steampowered.com/search/?term=" + encodeURIComponent(name)
+})).sort((a, b) => a.name.localeCompare(b.name, "fr"));
+
+const state = { players: null, types: new Set(), price: null, offline: false };
+
+function chip(label, pressed, onClick, big) {
+  const b = document.createElement("button");
+  b.type = "button"; b.className = "chip" + (big ? " big" : "");
+  b.textContent = label; b.setAttribute("aria-pressed", pressed);
+  b.addEventListener("click", onClick);
+  return b;
+}
+
+function renderFilters() {
+  const p = document.getElementById("players"); p.replaceChildren();
+  PLAYERS.forEach(([label, n]) => p.append(chip(label, state.players === n, () => {
+    state.players = state.players === n ? null : n; update();
+  }, true)));
+
+  const t = document.getElementById("types"); t.replaceChildren();
+  Object.entries(TYPES).forEach(([key, label]) => t.append(chip(label, state.types.has(key), () => {
+    state.types.has(key) ? state.types.delete(key) : state.types.add(key); update();
+  })));
+
+  const pr = document.getElementById("price"); pr.replaceChildren();
+  [["Gratuit", "free"], ["Payant", "paid"]].forEach(([label, v]) => pr.append(chip(label, state.price === v, () => {
+    state.price = state.price === v ? null : v; update();
+  })));
+
+  const nt = document.getElementById("net"); nt.replaceChildren();
+  nt.append(chip("Sans internet", state.offline, () => { state.offline = !state.offline; update(); }));
+}
+
+function matches(g) {
+  if (state.players !== null) {
+    const n = state.players;
+    if (n === 5 ? g.max < 5 : (n < g.min || n > g.max)) return false;
+  }
+  if (state.types.size && !g.types.some(t => state.types.has(t))) return false;
+  if (state.price === "free" && !g.free) return false;
+  if (state.price === "paid" && g.free) return false;
+  if (state.offline && !g.modes.some(m => m === "l" || m === "e")) return false;
+  return true;
+}
+
+function renderGrid() {
+  const list = games.filter(matches);
+  const grid = document.getElementById("grid"); grid.replaceChildren();
+  document.getElementById("count").textContent =
+    list.length + (list.length > 1 ? " jeux" : " jeu");
+  if (!list.length) {
+    const e = document.createElement("p"); e.className = "empty";
+    e.textContent = "Aucun jeu ne correspond. Retirez un filtre pour élargir la recherche.";
+    grid.append(e); return;
+  }
+  for (const g of list) {
+    const a = document.createElement("a");
+    a.className = "game"; a.href = g.url; a.target = "_blank"; a.rel = "noopener";
+    const range = g.min === g.max ? g.min + " j." : g.min + "–" + g.max + " j.";
+    a.innerHTML = `<div class="top"><h2></h2><span class="players">${range}</span></div>
+      <div class="tags"><span class="tag price ${g.free ? "free" : "paid"}">${g.free ? "Gratuit" : "Payant"}</span>
+      ${g.types.map(t => `<span class="tag">${TYPES[t]}</span>`).join("")}</div>
+      <div class="modes">${g.modes.map(m => MODES[m]).join(" · ")}</div>`;
+    a.querySelector("h2").textContent = g.name;
+    grid.append(a);
+  }
+}
+
+function update() { renderFilters(); renderGrid(); }
+document.getElementById("reset").addEventListener("click", () => {
+  state.players = null; state.types.clear(); state.price = null; state.offline = false; update();
+});
+update();
+</script>
