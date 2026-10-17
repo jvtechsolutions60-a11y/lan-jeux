@@ -1,0 +1,403 @@
+<!doctype html>
+<title>Soirée LAN · LAN &amp; Jeux</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: grid; gap: 14px; min-width: 0; }
+.panel h2 { font: 700 20px/1.2 var(--display); margin: 0; }
+.panel p { margin: 0; color: var(--muted); }
+.steps { margin: 0; padding-left: 20px; color: var(--muted); display: grid; gap: 4px; }
+.field { display: grid; gap: 6px; }
+.field label { font: 600 12px/1 var(--body); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.input { font: 500 16px/1.2 var(--body); color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 11px 14px; width: 100%; min-width: 0; }
+.input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.btn { font: 700 15px/1 var(--display); color: var(--accent-fg); background: var(--accent); border: 0; border-radius: 8px; padding: 12px 16px; cursor: pointer; }
+.btn:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+.btn:disabled { opacity: .5; cursor: default; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.players-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.player { display: inline-flex; align-items: center; gap: 8px; font: 500 14px/1 var(--body); background: var(--chip); border-radius: 999px; padding: 6px 6px 6px 12px; }
+.player small { color: var(--muted); font: 500 12px var(--mono); }
+.player button { border: 0; background: none; color: var(--muted); cursor: pointer; font-size: 16px; line-height: 1; padding: 2px 6px; border-radius: 999px; }
+.player button:hover { color: var(--fg); background: var(--line); }
+.player.me { background: var(--accent); color: var(--accent-fg); }
+.player.me small, .player.me button { color: var(--accent-fg); }
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 16px; align-items: start; }
+@media (max-width: 860px) { .layout { grid-template-columns: minmax(0, 1fr); } }
+.owned { max-height: 520px; overflow-y: auto; border: 1px solid var(--line); border-radius: 8px; }
+.row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 10px; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+.row:last-child { border-bottom: 0; }
+.row input { width: 18px; height: 18px; accent-color: var(--accent); margin: 0; }
+.row .nm { overflow-wrap: anywhere; }
+.row .pl { font: 500 12px var(--mono); color: var(--muted); white-space: nowrap; }
+.star { border: 0; background: none; cursor: pointer; font-size: 18px; line-height: 1; color: var(--line); padding: 2px 4px; }
+.star[aria-pressed="true"] { color: var(--accent); }
+.star:focus-visible { outline: 2px solid var(--accent); border-radius: 4px; }
+.hint { font-size: 13px; color: var(--muted); }
+.toast { font-size: 14px; color: var(--free); font-weight: 600; }
+.result-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; }
+.votes { font: 700 12px/1 var(--mono); color: var(--accent); }
+.missing { font-size: 12.5px; color: var(--paid); }
+.section-title { font: 700 16px/1.2 var(--display); margin: 8px 0 0; }
+.grid.small { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+</style>
+
+<div class="wrap">
+  <header>
+    <nav class="nav"><a href="./">Catalogue</a><a href="soiree.html" aria-current="page">Soirée LAN</a></nav>
+    <h1>Soirée <span>LAN</span></h1>
+    <p>Chacun coche les jeux qu'il possède, et le site trouve ceux auxquels <strong>tout le groupe</strong> peut jouer ce soir.</p>
+  </header>
+
+  <!-- Écran de création -->
+  <section class="panel" id="create" hidden>
+    <h2>Créer une soirée</h2>
+    <ol class="steps">
+      <li>Donnez un nom à la soirée et entrez votre pseudo.</li>
+      <li>Cochez les jeux que vous possédez, puis copiez le lien.</li>
+      <li>Envoyez le lien au groupe : chacun ajoute ses jeux et renvoie le lien mis à jour.</li>
+    </ol>
+    <div class="field"><label for="party-name">Nom de la soirée</label>
+      <input class="input" id="party-name" maxlength="40" placeholder="LAN chez Max, samedi"></div>
+    <div class="field"><label for="first-name">Votre pseudo</label>
+      <input class="input" id="first-name" maxlength="20" placeholder="Votre pseudo"></div>
+    <div class="actions"><button class="btn" id="create-btn" type="button">Créer la soirée</button></div>
+  </section>
+
+  <!-- Écran de soirée -->
+  <div id="party" hidden>
+    <div class="wrap" style="gap:16px">
+      <section class="panel">
+        <div class="result-head">
+          <h2 id="party-title"></h2>
+          <span class="hint" id="party-count"></span>
+        </div>
+        <div class="players-list" id="players"></div>
+        <div class="actions">
+          <button class="btn" id="share-btn" type="button">Copier le lien de la soirée</button>
+          <span class="toast" id="toast" aria-live="polite"></span>
+        </div>
+        <p class="hint">Ce lien contient toute la soirée. Après avoir coché vos jeux, renvoyez-le au groupe pour que les autres voient vos choix.</p>
+        <details>
+          <summary class="hint">Quelqu'un a envoyé une autre version du lien ?</summary>
+          <div class="actions" style="margin-top:10px">
+            <input class="input" id="merge-input" placeholder="Collez son lien ici" style="flex:1 1 240px">
+            <button class="btn" id="merge-btn" type="button">Fusionner</button>
+          </div>
+        </details>
+      </section>
+
+      <div class="layout">
+        <section class="panel" id="mine">
+          <h2>Mes jeux</h2>
+          <div class="field"><label for="me-name">Votre pseudo</label>
+            <input class="input" id="me-name" maxlength="20" placeholder="Votre pseudo" list="known-players"></div>
+          <datalist id="known-players"></datalist>
+          <p class="hint">Les jeux gratuits comptent automatiquement pour tout le monde. Cochez seulement les jeux payants que vous avez, et mettez une ★ sur 3 jeux maximum dont vous avez envie.</p>
+          <input class="input" id="owned-search" type="search" placeholder="Rechercher un jeu…" aria-label="Rechercher dans mes jeux">
+          <div class="chips" role="group" aria-label="Afficher">
+            <button class="chip" id="show-all" type="button" aria-pressed="true">Tous les payants</button>
+            <button class="chip" id="show-mine" type="button" aria-pressed="false">Seulement les miens</button>
+            <button class="chip" id="show-free" type="button" aria-pressed="false">Gratuits (pour voter)</button>
+          </div>
+          <div class="owned" id="owned"></div>
+          <div class="actions">
+            <button class="btn" id="save-btn" type="button">Enregistrer et copier le lien</button>
+            <span class="hint" id="mine-count"></span>
+          </div>
+        </section>
+
+        <section class="panel" id="results">
+          <div class="result-head">
+            <h2>On peut jouer à…</h2>
+            <div class="chips">
+              <button class="chip" id="offline" type="button" aria-pressed="false">Sans internet</button>
+            </div>
+          </div>
+          <p class="hint" id="results-hint"></p>
+          <div class="grid small" id="ok"></div>
+          <h3 class="section-title" id="almost-title">Presque : il manque un seul joueur</h3>
+          <div class="grid small" id="almost"></div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <footer>Rien n'est stocké sur un serveur : la soirée tient entièrement dans le lien. Images et pages des jeux : Steam.</footer>
+</div>
+
+<script src="games.js"></script>
+<script>
+// ---------- Données ----------
+const norm = t => t.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+const slug = t => norm(t).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+const MODES = { l: "LAN", e: "Même écran", o: "Internet" };
+const games = (window.GAMES || []).map(([name, min, max, types, free, modes, link, desc]) => ({
+  name, min, max, desc: desc || "", free: !!free, modes: modes.split(""), key: norm(name),
+  appid: typeof link === "number" ? link : null,
+  // identifiant stable : numéro Steam en base 36, sinon nom simplifié
+  id: typeof link === "number" ? link.toString(36) : "~" + slug(name),
+  url: typeof link === "number" ? "https://store.steampowered.com/app/" + link + "/"
+    : link || "https://store.steampowered.com/search/?term=" + encodeURIComponent(name)
+})).sort((a, b) => a.name.localeCompare(b.name, "fr"));
+const byId = new Map(games.map(g => [g.id, g]));
+const plural = (n, one, many) => n + " " + (n > 1 ? many : one);
+
+// ---------- Soirée dans le lien ----------
+// Format : { n: nom, p: [[pseudo, "id.id.id", "id.id"]] }
+function encode(party) {
+  const json = JSON.stringify({ n: party.name, p: party.players.map(p => [p.name, [...p.owned].join("."), [...p.votes].join(".")]) });
+  const bytes = new TextEncoder().encode(json);
+  let bin = ""; bytes.forEach(b => bin += String.fromCharCode(b));
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+function decode(str) {
+  try {
+    const bin = atob(str.replace(/-/g, "+").replace(/_/g, "/"));
+    const json = new TextDecoder().decode(Uint8Array.from(bin, c => c.charCodeAt(0)));
+    const d = JSON.parse(json);
+    return {
+      name: String(d.n || "Soirée LAN").slice(0, 40),
+      players: (d.p || []).map(([n, o, v]) => ({
+        name: String(n).slice(0, 20),
+        owned: new Set(String(o || "").split(".").filter(id => byId.has(id))),
+        votes: new Set(String(v || "").split(".").filter(id => byId.has(id)).slice(0, 3))
+      }))
+    };
+  } catch { return null; }
+}
+function fromUrl(text) {
+  const m = String(text).match(/[#&]s=([A-Za-z0-9_-]+)/);
+  return m ? decode(m[1]) : null;
+}
+const linkFor = party => location.href.split("#")[0] + "#s=" + encode(party);
+
+let party = fromUrl(location.hash);
+let meName = "";
+try { meName = localStorage.getItem("lanjeux-pseudo") || ""; } catch {}
+
+// ---------- Création ----------
+function showCreate() {
+  document.getElementById("create").hidden = false;
+  document.getElementById("party").hidden = true;
+  document.getElementById("first-name").value = meName;
+}
+document.getElementById("create-btn").addEventListener("click", () => {
+  const name = document.getElementById("party-name").value.trim() || "Soirée LAN";
+  const me = document.getElementById("first-name").value.trim();
+  if (!me) { document.getElementById("first-name").focus(); return; }
+  setMe(me);
+  party = { name, players: [{ name: me, owned: new Set(), votes: new Set() }] };
+  persist();
+  showParty();
+});
+
+// ---------- Moi ----------
+function setMe(n) { meName = n; try { localStorage.setItem("lanjeux-pseudo", n); } catch {} }
+function mePlayer(create) {
+  const n = meName.trim();
+  if (!n) return null;
+  let p = party.players.find(p => p.name.toLowerCase() === n.toLowerCase());
+  if (!p && create) { p = { name: n, owned: new Set(), votes: new Set() }; party.players.push(p); }
+  return p;
+}
+function persist() { history.replaceState(null, "", "#s=" + encode(party)); }
+
+// ---------- Affichage soirée ----------
+function showParty() {
+  document.getElementById("create").hidden = true;
+  document.getElementById("party").hidden = false;
+  document.getElementById("me-name").value = meName;
+  renderAll();
+}
+function renderAll() { renderHeader(); renderOwned(); renderResults(); }
+
+function renderHeader() {
+  document.getElementById("party-title").textContent = party.name;
+  const n = party.players.length;
+  document.getElementById("party-count").textContent = n + (n > 1 ? " joueurs" : " joueur");
+  const box = document.getElementById("players"); box.replaceChildren();
+  const dl = document.getElementById("known-players"); dl.replaceChildren();
+  for (const p of party.players) {
+    const chip = document.createElement("span");
+    chip.className = "player" + (p.name.toLowerCase() === meName.trim().toLowerCase() ? " me" : "");
+    const label = document.createElement("span"); label.textContent = p.name;
+    const count = document.createElement("small"); count.textContent = plural(p.owned.size, "jeu", "jeux");
+    const del = document.createElement("button"); del.type = "button"; del.textContent = "×";
+    del.setAttribute("aria-label", "Retirer " + p.name + " de la soirée");
+    del.addEventListener("click", () => {
+      if (del.dataset.confirm) {
+        party.players = party.players.filter(x => x !== p); persist(); renderAll();
+      } else { del.dataset.confirm = "1"; del.textContent = "Retirer ?"; }
+    });
+    chip.append(label, count, del); box.append(chip);
+    const o = document.createElement("option"); o.value = p.name; dl.append(o);
+  }
+}
+
+let view = "all", q = "";
+function renderOwned() {
+  const me = mePlayer(false);
+  const list = document.getElementById("owned"); list.replaceChildren();
+  const pool = games.filter(g => {
+    if (view === "free") { if (!g.free) return false; }
+    else if (g.free) return false;
+    if (view === "mine" && !(me && me.owned.has(g.id))) return false;
+    return !q || g.key.includes(q);
+  });
+  const frag = document.createDocumentFragment();
+  for (const g of pool) {
+    const row = document.createElement("div"); row.className = "row";
+    const cb = document.createElement("input"); cb.type = "checkbox"; cb.id = "own-" + g.id;
+    cb.checked = g.free || !!(me && me.owned.has(g.id)); cb.disabled = g.free;
+    cb.addEventListener("change", () => {
+      const p = mePlayer(true); if (!p) { askName(); cb.checked = false; return; }
+      cb.checked ? p.owned.add(g.id) : (p.owned.delete(g.id), p.votes.delete(g.id));
+      persist(); renderHeader(); renderResults(); updateMineCount();
+      if (view === "mine") renderOwned();
+    });
+    const lab = document.createElement("label"); lab.className = "nm"; lab.htmlFor = cb.id; lab.textContent = g.name;
+    const pl = document.createElement("span"); pl.className = "pl"; pl.textContent = g.min === g.max ? g.min + " j." : g.min + "–" + g.max;
+    const star = document.createElement("button"); star.type = "button"; star.className = "star"; star.textContent = "★";
+    star.setAttribute("aria-label", "J'ai envie de jouer à " + g.name);
+    star.setAttribute("aria-pressed", !!(me && me.votes.has(g.id)));
+    star.addEventListener("click", () => {
+      const p = mePlayer(true); if (!p) { askName(); return; }
+      if (p.votes.has(g.id)) p.votes.delete(g.id);
+      else {
+        if (p.votes.size >= 3) { toast("3 envies maximum : retirez une ★ d'abord."); return; }
+        p.votes.add(g.id); if (!g.free) p.owned.add(g.id);
+      }
+      persist(); renderAll();
+    });
+    row.append(cb, lab, pl, star); frag.append(row);
+  }
+  if (!pool.length) {
+    const e = document.createElement("p"); e.className = "hint"; e.style.padding = "12px";
+    e.textContent = view === "mine" ? "Vous n'avez encore coché aucun jeu." : "Aucun jeu ne correspond à cette recherche.";
+    frag.append(e);
+  }
+  list.append(frag);
+  updateMineCount();
+}
+function updateMineCount() {
+  const me = mePlayer(false);
+  document.getElementById("mine-count").textContent = me ? plural(me.owned.size, "jeu coché", "jeux cochés") + " · " + me.votes.size + "/3 ★" : "";
+}
+function askName() {
+  const f = document.getElementById("me-name"); f.focus();
+  toast("Entrez d'abord votre pseudo.");
+}
+
+let offline = false;
+function renderResults() {
+  const players = party.players;
+  const n = players.length;
+  const votes = new Map();
+  players.forEach(p => p.votes.forEach(id => votes.set(id, (votes.get(id) || 0) + 1)));
+  const fits = g => n >= g.min && n <= g.max || (n < 2 && g.min <= 2);
+  const net = g => !offline || g.modes.some(m => m === "l" || m === "e");
+  const ok = [], almost = [];
+  for (const g of games) {
+    if (!fits(g) || !net(g)) continue;
+    if (g.free) { ok.push(g); continue; }
+    const lacking = players.filter(p => !p.owned.has(g.id));
+    if (!lacking.length) ok.push(g);
+    else if (lacking.length === 1 && n > 2) almost.push([g, lacking[0].name]);
+  }
+  const rank = (a, b) => (votes.get(b.id) || 0) - (votes.get(a.id) || 0) || (a.free - b.free) || a.name.localeCompare(b.name, "fr");
+  ok.sort(rank); almost.sort((a, b) => rank(a[0], b[0]));
+  const paidOk = ok.filter(g => !g.free).length;
+  document.getElementById("results-hint").textContent = n < 2
+    ? "Invitez au moins un autre joueur pour voir les jeux en commun. En attendant, voici les jeux gratuits jouables à deux."
+    : plural(ok.length, "jeu", "jeux") + " pour " + n + " joueurs, dont " + plural(paidOk, "payant", "payants") + " que tout le monde possède. Les jeux avec le plus d'★ passent en premier, puis les payants.";
+  fill("ok", ok.map(g => card(g, votes.get(g.id) || 0)));
+  const at = document.getElementById("almost-title");
+  at.hidden = !almost.length;
+  fill("almost", almost.slice(0, 24).map(([g, who]) => card(g, votes.get(g.id) || 0, who)));
+}
+function fill(id, nodes) { const el = document.getElementById(id); el.replaceChildren(...nodes); }
+
+function card(g, v, missing) {
+  const a = document.createElement("a"); a.className = "game"; a.href = g.url; a.target = "_blank"; a.rel = "noopener";
+  const cover = document.createElement("div"); cover.className = "cover";
+  const ini = document.createElement("span"); ini.className = "initials";
+  ini.textContent = g.name.replace(/[^A-Za-z0-9 ]/g, "").split(" ").filter(Boolean).slice(0, 2).map(w => w[0]).join("").toUpperCase();
+  cover.append(ini);
+  if (g.appid) {
+    const img = document.createElement("img"); img.alt = ""; img.loading = "lazy";
+    const urls = ["https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/" + g.appid + "/header.jpg",
+                  "https://cdn.cloudflare.steamstatic.com/steam/apps/" + g.appid + "/header.jpg"];
+    let i = 0; img.onerror = () => { i++; i < urls.length ? img.src = urls[i] : img.remove(); };
+    img.onload = () => ini.remove(); img.src = urls[0]; cover.append(img);
+  }
+  const body = document.createElement("div"); body.className = "body";
+  const top = document.createElement("div"); top.className = "top";
+  const h = document.createElement("h2"); h.textContent = g.name;
+  const pl = document.createElement("span"); pl.className = "players";
+  pl.textContent = g.min === g.max ? g.min + " j." : g.min + "–" + g.max + " j.";
+  top.append(h, pl); body.append(top);
+  const tags = document.createElement("div"); tags.className = "tags";
+  const price = document.createElement("span"); price.className = "tag price " + (g.free ? "free" : "paid");
+  price.textContent = g.free ? "Gratuit" : "Payant"; tags.append(price);
+  if (v) { const s = document.createElement("span"); s.className = "votes"; s.textContent = "★ " + v; tags.append(s); }
+  body.append(tags);
+  if (missing) { const m = document.createElement("div"); m.className = "missing"; m.textContent = "Il manque à " + missing; body.append(m); }
+  const md = document.createElement("div"); md.className = "modes"; md.textContent = g.modes.map(m => MODES[m]).join(" · ");
+  body.append(md);
+  a.append(cover, body);
+  return a;
+}
+
+// ---------- Actions ----------
+let toastTimer;
+function toast(msg) {
+  const t = document.getElementById("toast"); t.textContent = msg;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.textContent = "", 4000);
+}
+async function share() {
+  const url = linkFor(party);
+  persist();
+  try { await navigator.clipboard.writeText(url); toast("Lien copié. Collez-le dans le groupe."); }
+  catch {
+    toast("Copie impossible ici : le lien est dans la barre d'adresse.");
+  }
+}
+document.getElementById("share-btn").addEventListener("click", share);
+document.getElementById("save-btn").addEventListener("click", () => {
+  if (!mePlayer(false)) { const p = mePlayer(true); if (!p) { askName(); return; } }
+  renderAll(); share();
+});
+document.getElementById("me-name").addEventListener("change", e => {
+  setMe(e.target.value.trim()); renderAll();
+});
+document.getElementById("owned-search").addEventListener("input", e => { q = norm(e.target.value.trim()); renderOwned(); });
+[["show-all", "all"], ["show-mine", "mine"], ["show-free", "free"]].forEach(([id, v]) =>
+  document.getElementById(id).addEventListener("click", () => {
+    view = v;
+    ["show-all", "show-mine", "show-free"].forEach(x => document.getElementById(x).setAttribute("aria-pressed", x === id));
+    renderOwned();
+  }));
+document.getElementById("offline").addEventListener("click", e => {
+  offline = !offline; e.currentTarget.setAttribute("aria-pressed", offline); renderResults();
+});
+document.getElementById("merge-btn").addEventListener("click", () => {
+  const other = fromUrl(document.getElementById("merge-input").value);
+  if (!other) { toast("Ce lien ne contient pas de soirée."); return; }
+  for (const op of other.players) {
+    const p = party.players.find(x => x.name.toLowerCase() === op.name.toLowerCase());
+    if (!p) party.players.push(op);
+    else { op.owned.forEach(id => p.owned.add(id)); if (op.votes.size) p.votes = op.votes; }
+  }
+  document.getElementById("merge-input").value = "";
+  persist(); renderAll(); toast("Liens fusionnés.");
+});
+window.addEventListener("hashchange", () => { const p = fromUrl(location.hash); if (p) { party = p; showParty(); } });
+
+party ? showParty() : showCreate();
+</script>
