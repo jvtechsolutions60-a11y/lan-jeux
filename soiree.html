@@ -60,13 +60,26 @@
     <ol class="steps">
       <li>Donnez un nom à la soirée et entrez votre pseudo.</li>
       <li>Cochez les jeux que vous possédez, puis copiez le lien.</li>
-      <li>Envoyez le lien au groupe : chacun ajoute ses jeux et renvoie le lien mis à jour.</li>
+      <li>Envoyez le lien au groupe : chacun entre son pseudo, ajoute ses jeux et renvoie le lien mis à jour.</li>
     </ol>
     <div class="field"><label for="party-name">Nom de la soirée</label>
       <input class="input" id="party-name" maxlength="40" placeholder="LAN chez Max, samedi"></div>
     <div class="field"><label for="first-name">Votre pseudo</label>
       <input class="input" id="first-name" maxlength="20" placeholder="Votre pseudo"></div>
     <div class="actions"><button class="btn" id="create-btn" type="button">Créer la soirée</button></div>
+  </section>
+
+  <!-- Écran pour rejoindre une soirée reçue -->
+  <section class="panel" id="join" hidden>
+    <h2 id="join-title"></h2>
+    <p id="join-who"></p>
+    <div class="field"><label for="join-name">Votre pseudo</label>
+      <input class="input" id="join-name" maxlength="20" placeholder="Votre pseudo"></div>
+    <div class="actions"><button class="btn" id="join-btn" type="button">Choisir mes jeux</button></div>
+    <div id="join-existing" hidden>
+      <p class="hint">Vous avez déjà choisi vos jeux ? Reprenez votre profil :</p>
+      <div class="chips" id="join-list"></div>
+    </div>
   </section>
 
   <!-- Écran de soirée -->
@@ -94,10 +107,10 @@
 
       <div class="layout">
         <section class="panel" id="mine">
-          <h2>Mes jeux</h2>
-          <div class="field"><label for="me-name">Votre pseudo</label>
-            <input class="input" id="me-name" maxlength="20" placeholder="Votre pseudo" list="known-players"></div>
-          <datalist id="known-players"></datalist>
+          <div class="result-head">
+            <h2 id="mine-title">Mes jeux</h2>
+            <button class="reset" id="switch-btn" type="button">Changer de joueur</button>
+          </div>
           <p class="hint">Les jeux gratuits comptent automatiquement pour tout le monde. Cochez seulement les jeux payants que vous avez, et mettez une ★ sur 3 jeux maximum dont vous avez envie.</p>
           <input class="input" id="owned-search" type="search" placeholder="Rechercher un jeu…" aria-label="Rechercher dans mes jeux">
           <div class="chips" role="group" aria-label="Afficher">
@@ -178,14 +191,18 @@ function fromUrl(text) {
 const linkFor = party => location.href.split("#")[0] + "#s=" + encode(party);
 
 let party = fromUrl(location.hash);
-let meName = "";
-try { meName = localStorage.getItem("lanjeux-pseudo") || ""; } catch {}
+// Le joueur de cet onglet. Un lien reçu ouvre toujours l'écran « Rejoindre » :
+// on ne reprend jamais automatiquement le profil de la personne qui a envoyé le lien.
+let meName = "", lastPseudo = "";
+try { meName = sessionStorage.getItem("lanjeux-me") || ""; } catch {}
+try { lastPseudo = localStorage.getItem("lanjeux-pseudo") || ""; } catch {}
 
 // ---------- Création ----------
 function showCreate() {
   document.getElementById("create").hidden = false;
   document.getElementById("party").hidden = true;
-  document.getElementById("first-name").value = meName;
+  document.getElementById("join").hidden = true;
+  document.getElementById("first-name").value = lastPseudo;
 }
 document.getElementById("create-btn").addEventListener("click", () => {
   const name = document.getElementById("party-name").value.trim() || "Soirée LAN";
@@ -198,7 +215,11 @@ document.getElementById("create-btn").addEventListener("click", () => {
 });
 
 // ---------- Moi ----------
-function setMe(n) { meName = n; try { localStorage.setItem("lanjeux-pseudo", n); } catch {} }
+function setMe(n) {
+  meName = n;
+  try { sessionStorage.setItem("lanjeux-me", n); } catch {}
+  if (n) { lastPseudo = n; try { localStorage.setItem("lanjeux-pseudo", n); } catch {} }
+}
 function mePlayer(create) {
   const n = meName.trim();
   if (!n) return null;
@@ -211,10 +232,40 @@ function persist() { history.replaceState(null, "", "#s=" + encode(party)); }
 // ---------- Affichage soirée ----------
 function showParty() {
   document.getElementById("create").hidden = true;
+  const known = meName && party.players.some(p => p.name.toLowerCase() === meName.toLowerCase());
+  if (!known) { showJoin(); return; }
+  document.getElementById("join").hidden = true;
   document.getElementById("party").hidden = false;
-  document.getElementById("me-name").value = meName;
+  document.getElementById("mine-title").textContent = "Les jeux de " + meName;
   renderAll();
 }
+function showJoin() {
+  setMe("");
+  document.getElementById("party").hidden = true;
+  document.getElementById("join").hidden = false;
+  document.getElementById("join-title").textContent = "Rejoindre « " + party.name + " »";
+  const names = party.players.map(p => p.name);
+  document.getElementById("join-who").textContent = names.length
+    ? (names.length > 1 ? names.slice(0, -1).join(", ") + " et " + names.at(-1) + " ont" : names[0] + " a")
+      + " déjà choisi. Entrez votre pseudo pour ajouter vos jeux."
+    : "Entrez votre pseudo pour ajouter vos jeux.";
+  const list = document.getElementById("join-list"); list.replaceChildren();
+  for (const n of names) {
+    const b = document.createElement("button"); b.type = "button"; b.className = "chip"; b.textContent = "Je suis " + n;
+    b.addEventListener("click", () => { setMe(n); showParty(); });
+    list.append(b);
+  }
+  document.getElementById("join-existing").hidden = !names.length;
+  const f = document.getElementById("join-name"); f.value = ""; f.focus();
+}
+function join() {
+  const n = document.getElementById("join-name").value.trim();
+  if (!n) { document.getElementById("join-name").focus(); return; }
+  setMe(n); mePlayer(true); persist(); showParty();
+}
+document.getElementById("join-btn").addEventListener("click", join);
+document.getElementById("join-name").addEventListener("keydown", e => { if (e.key === "Enter") join(); });
+document.getElementById("switch-btn").addEventListener("click", showJoin);
 function renderAll() { renderHeader(); renderOwned(); renderResults(); }
 
 function renderHeader() {
@@ -222,7 +273,6 @@ function renderHeader() {
   const n = party.players.length;
   document.getElementById("party-count").textContent = n + (n > 1 ? " joueurs" : " joueur");
   const box = document.getElementById("players"); box.replaceChildren();
-  const dl = document.getElementById("known-players"); dl.replaceChildren();
   for (const p of party.players) {
     const chip = document.createElement("span");
     chip.className = "player" + (p.name.toLowerCase() === meName.trim().toLowerCase() ? " me" : "");
@@ -232,11 +282,10 @@ function renderHeader() {
     del.setAttribute("aria-label", "Retirer " + p.name + " de la soirée");
     del.addEventListener("click", () => {
       if (del.dataset.confirm) {
-        party.players = party.players.filter(x => x !== p); persist(); renderAll();
+        party.players = party.players.filter(x => x !== p); persist(); showParty();
       } else { del.dataset.confirm = "1"; del.textContent = "Retirer ?"; }
     });
     chip.append(label, count, del); box.append(chip);
-    const o = document.createElement("option"); o.value = p.name; dl.append(o);
   }
 }
 
@@ -289,10 +338,7 @@ function updateMineCount() {
   const me = mePlayer(false);
   document.getElementById("mine-count").textContent = me ? plural(me.owned.size, "jeu coché", "jeux cochés") + " · " + me.votes.size + "/3 ★" : "";
 }
-function askName() {
-  const f = document.getElementById("me-name"); f.focus();
-  toast("Entrez d'abord votre pseudo.");
-}
+function askName() { showJoin(); }
 
 let offline = false;
 function renderResults() {
@@ -372,9 +418,6 @@ document.getElementById("share-btn").addEventListener("click", share);
 document.getElementById("save-btn").addEventListener("click", () => {
   if (!mePlayer(false)) { const p = mePlayer(true); if (!p) { askName(); return; } }
   renderAll(); share();
-});
-document.getElementById("me-name").addEventListener("change", e => {
-  setMe(e.target.value.trim()); renderAll();
 });
 document.getElementById("owned-search").addEventListener("input", e => { q = norm(e.target.value.trim()); renderOwned(); });
 [["show-all", "all"], ["show-mine", "mine"], ["show-free", "free"]].forEach(([id, v]) =>
