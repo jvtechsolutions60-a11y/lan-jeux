@@ -121,3 +121,17 @@ footer { color: var(--muted); font-size: 13px; }
 .nav a[aria-current="page"] { color: var(--accent-fg); background: var(--accent); border-color: var(--accent); }
 .nav a:hover { border-color: var(--accent); }
 .nav a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Barre de recherche collante et filtres repliables sur mobile */
+.toolbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); padding-block: 8px; }
+.filters-toggle { display: none; font: 600 14px var(--body); color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 11px 14px; cursor: pointer; }
+.filters-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.filters-toggle span { color: var(--accent); font-weight: 700; }
+@media (max-width: 700px) {
+  .filters-toggle { display: inline-block; }
+  /* le nombre de joueurs reste visible, le reste se replie */
+  .filters.collapsed > :not(:first-child) { display: none; }
+  .toolbar .search { flex-basis: 100%; }
+  .toolbar .sort, .toolbar .filters-toggle, .toolbar .dice { flex: 1 1 0; min-width: 0; white-space: nowrap; font-size: 14px; padding-inline: 8px; }
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }

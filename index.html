@@ -18,11 +18,12 @@
   <div class="toolbar">
     <input class="search" id="search" type="search" placeholder="Rechercher un jeu…" aria-label="Rechercher un jeu par son nom" autocomplete="off">
     <select class="sort" id="sort" aria-label="Trier">
-      <option value="name">Nom (A → Z)</option>
-      <option value="max">Le plus de joueurs</option>
+      <option value="name">A → Z</option>
+      <option value="max">+ de joueurs</option>
       <option value="free">Gratuits d'abord</option>
     </select>
-    <button class="dice" id="dice" type="button">🎲 Jeu au hasard</button>
+    <button class="filters-toggle" id="filters-toggle" type="button" aria-expanded="false" aria-controls="filters">Filtres <span id="filters-n"></span></button>
+    <button class="dice" id="dice" type="button">🎲 Au hasard</button>
   </div>
 
   <section class="pick" id="pick" hidden aria-live="polite">
@@ -36,7 +37,7 @@
     <div id="pick-card"></div>
   </section>
 
-  <section class="filters" aria-label="Filtres">
+  <section class="filters collapsed" id="filters" aria-label="Filtres">
     <div class="group">
       <div class="label" id="lbl-players">Nombre de joueurs</div>
       <div class="chips" id="players" role="group" aria-labelledby="lbl-players"></div>
@@ -201,7 +202,16 @@ document.getElementById("close-pick").addEventListener("click", () => { document
 document.getElementById("search").addEventListener("input", e => { state.q = norm(e.target.value.trim()); renderGrid(); });
 document.getElementById("sort").addEventListener("change", e => { state.sort = e.target.value; renderGrid(); });
 
-function update() { renderFilters(); renderGrid(); }
+function update() {
+  renderFilters(); renderGrid();
+  const n = (state.players !== null) + state.types.size + (state.price !== null) + state.offline;
+  document.getElementById("filters-n").textContent = n ? "(" + n + ")" : "";
+}
+document.getElementById("filters-toggle").addEventListener("click", e => {
+  const f = document.getElementById("filters");
+  f.classList.toggle("collapsed");
+  e.currentTarget.setAttribute("aria-expanded", !f.classList.contains("collapsed"));
+});
 document.getElementById("reset").addEventListener("click", () => {
   state.players = null; state.types.clear(); state.price = null; state.offline = false;
   state.q = ""; document.getElementById("search").value = ""; update();

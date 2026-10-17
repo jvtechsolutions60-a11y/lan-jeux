@@ -8,159 +8,206 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
-.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: grid; gap: 14px; min-width: 0; }
+body { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px; display: grid; gap: 14px; min-width: 0; }
 .panel h2 { font: 700 20px/1.2 var(--display); margin: 0; }
 .panel p { margin: 0; color: var(--muted); }
-.steps { margin: 0; padding-left: 20px; color: var(--muted); display: grid; gap: 4px; }
+.steps { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; counter-reset: s; }
+.steps li { counter-increment: s; display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 10px; align-items: start; color: var(--muted); }
+.steps li::before { content: counter(s); font: 700 14px/28px var(--display); text-align: center; width: 28px; height: 28px; border-radius: 50%; background: var(--chip); color: var(--fg); }
 .field { display: grid; gap: 6px; }
 .field label { font: 600 12px/1 var(--body); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
-.input { font: 500 16px/1.2 var(--body); color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 11px 14px; width: 100%; min-width: 0; }
+.input { font: 500 16px/1.2 var(--body); color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; width: 100%; min-width: 0; }
 .input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
-.btn { font: 700 15px/1 var(--display); color: var(--accent-fg); background: var(--accent); border: 0; border-radius: 8px; padding: 12px 16px; cursor: pointer; }
+.btn { font: 700 15px/1 var(--display); color: var(--accent-fg); background: var(--accent); border: 0; border-radius: 8px; padding: 13px 18px; cursor: pointer; white-space: nowrap; }
+.btn:hover { filter: brightness(1.06); }
 .btn:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
 .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.players-list { display: flex; flex-wrap: wrap; gap: 8px; }
-.player { display: inline-flex; align-items: center; gap: 8px; font: 500 14px/1 var(--body); background: var(--chip); border-radius: 999px; padding: 6px 6px 6px 12px; }
-.player small { color: var(--muted); font: 500 12px var(--mono); }
-.player button { border: 0; background: none; color: var(--muted); cursor: pointer; font-size: 14px; line-height: 1; padding: 2px 6px; border-radius: 999px; }
-.player button:hover { color: var(--fg); background: var(--line); }
-.player.me { background: var(--accent); color: var(--accent-fg); }
-.player.me small, .player.me button { color: var(--accent-fg); }
-.layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 16px; align-items: start; }
-@media (max-width: 860px) { .layout { grid-template-columns: minmax(0, 1fr); } }
-.col { display: grid; gap: 16px; min-width: 0; }
-.list { max-height: 520px; overflow-y: auto; border: 1px solid var(--line); border-radius: 8px; }
-.row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--line); }
-.row:last-child { border-bottom: 0; }
-.row input { width: 18px; height: 18px; accent-color: var(--accent); margin: 0; }
-.row .nm { overflow-wrap: anywhere; display: grid; gap: 2px; min-width: 0; }
-.row .nm label { cursor: pointer; }
-.row .pl { font: 500 12px var(--mono); color: var(--muted); white-space: nowrap; }
-.row.taken { background: color-mix(in srgb, var(--free-bg) 45%, transparent); }
-.who { font-size: 12px; color: var(--free); }
-.row a { font-size: 13px; color: var(--accent); white-space: nowrap; }
 .hint { font-size: 13px; color: var(--muted); }
-.toast { font-size: 14px; color: var(--free); font-weight: 600; }
-.result-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; }
-.section-title { font: 700 16px/1.2 var(--display); margin: 8px 0 0; }
-.grid.small { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
-.picked { font: 600 12px/1 var(--mono); color: var(--accent); }
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+
+/* En-tête de soirée */
+.party-head { display: grid; gap: 12px; }
+.party-head .line { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; }
+.party-head h2 { font: 700 24px/1.15 var(--display); margin: 0; overflow-wrap: anywhere; }
+.players-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.player { display: inline-flex; align-items: center; gap: 8px; font: 500 14px/1 var(--body); background: var(--chip); border-radius: 999px; padding: 5px 6px 5px 12px; }
+.player .meter { font: 500 11.5px var(--mono); color: var(--muted); }
+.player.ready-all .meter { color: var(--free); }
+.player button { border: 0; background: none; color: var(--muted); cursor: pointer; font-size: 13px; line-height: 1; padding: 4px 6px; border-radius: 999px; }
+.player button:hover { color: var(--fg); background: var(--line); }
+.player.me { box-shadow: inset 0 0 0 2px var(--accent); }
+.player button:focus-visible, .tab:focus-visible, .linkish:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.linkish { background: none; border: 0; color: var(--accent); font: 600 13px var(--body); cursor: pointer; padding: 0; }
+.mergebox { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* Onglets d'étapes */
+.tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; background: var(--chip); padding: 5px; border-radius: 12px; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; }
+.tab { display: flex; align-items: center; justify-content: center; gap: 8px; border: 0; background: none; color: var(--muted); font: 600 14px/1.1 var(--body); padding: 11px 8px; border-radius: 8px; cursor: pointer; min-width: 0; }
+.tab .n { font: 700 12px/1 var(--display); color: var(--muted); }
+.tab[aria-selected="true"] { background: var(--panel); color: var(--fg); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+.tab .badge { font: 700 11px/1 var(--mono); padding: 4px 6px; border-radius: 999px; background: var(--line); color: var(--fg); }
+.tab .badge.todo { background: var(--accent); color: var(--accent-fg); }
+.tab .badge.done { background: var(--free-bg); color: var(--free); }
+@media (max-width: 480px) { .tab .n { display: none; } .tab { font-size: 13px; } }
+
+/* Listes */
+.toolbar2 { display: grid; gap: 10px; }
+.list { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.list.scroll { max-height: min(60vh, 560px); overflow-y: auto; }
+.item { display: grid; grid-template-columns: auto 72px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--line); cursor: pointer; }
+.item:last-child { border-bottom: 0; }
+.item:hover { background: color-mix(in srgb, var(--chip) 60%, transparent); }
+.item.on { background: color-mix(in srgb, var(--accent) 10%, transparent); }
+.item input { width: 20px; height: 20px; accent-color: var(--accent); margin: 0; cursor: pointer; }
+.thumb { width: 72px; aspect-ratio: 231 / 87; border-radius: 4px; background: var(--chip); overflow: hidden; display: grid; place-items: center; font: 700 12px var(--display); color: var(--muted); max-width: 100%; }
+.thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.item .txt { display: grid; gap: 2px; min-width: 0; }
+.item .nm { font-weight: 600; overflow-wrap: anywhere; }
+.item .sub { font-size: 12.5px; color: var(--muted); }
+.item .sub .by { color: var(--free); font-weight: 600; }
+.item .pl { font: 500 12px var(--mono); color: var(--muted); white-space: nowrap; }
+.item a { font: 600 13px var(--body); color: var(--accent); white-space: nowrap; }
+.empty { padding: 18px; color: var(--muted); text-align: center; }
+
+/* Programme */
+.prog { display: grid; gap: 10px; }
+.pcard { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 14px; align-items: center; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+.pcard .thumb { width: 120px; }
+.pcard .txt { display: grid; gap: 6px; min-width: 0; }
+.pcard .top { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.pcard h3 { font: 600 16px/1.25 var(--body); margin: 0; overflow-wrap: anywhere; }
+.pcard .meta { font-size: 12.5px; color: var(--muted); }
+.bar { height: 6px; border-radius: 999px; background: var(--chip); overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--free); border-radius: 999px; }
 .ready { display: flex; flex-wrap: wrap; gap: 4px; }
-.ready span { font-size: 11.5px; padding: 3px 7px; border-radius: 999px; background: var(--chip); color: var(--muted); }
+.ready span { font-size: 11.5px; padding: 3px 8px; border-radius: 999px; background: var(--chip); color: var(--muted); }
 .ready span.ok { background: var(--free-bg); color: var(--free); }
-.summary-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 14px; }
-.summary-list strong { font-weight: 600; }
-.summary-list span { color: var(--muted); }
-.done { color: var(--free); font-weight: 600; }
+.pcard.dim { opacity: .85; }
+@media (max-width: 480px) { .pcard { grid-template-columns: 84px minmax(0, 1fr); gap: 10px; } .pcard .thumb { width: 84px; } }
+.section-title { font: 700 16px/1.2 var(--display); margin: 6px 0 0; }
+.done-msg { color: var(--free); font-weight: 600; }
+
+/* Barre d'envoi */
+.sendbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; background: var(--panel); border-top: 1px solid var(--line);
+  padding: 12px max(16px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.sendbar .in { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.state { display: flex; align-items: center; gap: 8px; font-size: 14px; min-width: 0; }
+.dot { width: 10px; height: 10px; border-radius: 50%; background: var(--free); flex: none; }
+.state.dirty .dot { background: var(--accent); }
+.state.dirty { font-weight: 600; }
 </style>
 
 <div class="wrap">
   <header>
     <nav class="nav"><a href="./">Catalogue</a><a href="soiree.html" aria-current="page">Soirée LAN</a></nav>
     <h1>Soirée <span>LAN</span></h1>
-    <p>Choisissez ensemble les jeux de la soirée, pour que chacun puisse les installer et les mettre à jour <strong>avant</strong> d'arriver.</p>
+    <p>Choisissez ensemble les jeux de la soirée, pour que chacun les installe et les mette à jour avant d'arriver.</p>
   </header>
 
-  <!-- Écran de création -->
+  <!-- Création -->
   <section class="panel" id="create" hidden>
     <h2>Créer une soirée</h2>
     <ol class="steps">
-      <li>Donnez un nom à la soirée et entrez votre pseudo.</li>
-      <li>Cochez les jeux auxquels vous voulez jouer, puis copiez le lien.</li>
-      <li>Envoyez le lien au groupe : chacun ajoute ses choix et renvoie le lien.</li>
-      <li>Les jeux choisis par le groupe forment le programme. Chacun les installe et se marque « prêt ».</li>
+      <li>Chacun coche les jeux auxquels il veut jouer.</li>
+      <li>Les jeux choisis par au moins la moitié du groupe forment le programme.</li>
+      <li>Chacun installe et met à jour les jeux du programme, puis se marque prêt.</li>
     </ol>
-    <div class="field"><label for="party-name">Nom de la soirée</label>
-      <input class="input" id="party-name" maxlength="40" placeholder="LAN chez Max, samedi"></div>
-    <div class="field"><label for="first-name">Votre pseudo</label>
-      <input class="input" id="first-name" maxlength="20" placeholder="Votre pseudo"></div>
+    <div class="two">
+      <div class="field"><label for="party-name">Nom de la soirée</label>
+        <input class="input" id="party-name" maxlength="40" placeholder="LAN chez Max, samedi"></div>
+      <div class="field"><label for="first-name">Votre pseudo</label>
+        <input class="input" id="first-name" maxlength="20" placeholder="Votre pseudo"></div>
+    </div>
     <div class="actions"><button class="btn" id="create-btn" type="button">Créer la soirée</button></div>
   </section>
 
-  <!-- Écran pour rejoindre une soirée reçue -->
+  <!-- Rejoindre -->
   <section class="panel" id="join" hidden>
     <h2 id="join-title"></h2>
     <p id="join-who"></p>
-    <ul class="summary-list" id="join-summary"></ul>
+    <div class="list" id="join-summary"></div>
     <div class="field"><label for="join-name">Votre pseudo</label>
       <input class="input" id="join-name" maxlength="20" placeholder="Votre pseudo"></div>
-    <div class="actions"><button class="btn" id="join-btn" type="button">Rejoindre et choisir mes jeux</button></div>
+    <div class="actions"><button class="btn" id="join-btn" type="button">Rejoindre la soirée</button></div>
     <div id="join-existing" hidden>
-      <p class="hint">Vous avez déjà rejoint cette soirée ? Reprenez votre profil :</p>
-      <div class="chips" id="join-list"></div>
+      <p class="hint">Déjà dans la soirée ? Reprenez votre profil :</p>
+      <div class="chips" id="join-list" style="margin-top:8px"></div>
     </div>
   </section>
 
-  <!-- Écran de soirée -->
+  <!-- Soirée -->
   <div id="party" hidden>
     <div class="wrap" style="gap:16px">
-      <section class="panel">
-        <div class="result-head">
+      <section class="panel party-head">
+        <div class="line">
           <h2 id="party-title"></h2>
           <span class="hint" id="party-count"></span>
         </div>
         <div class="players-list" id="players"></div>
         <div class="actions">
-          <button class="btn" id="share-btn" type="button">Copier le lien de la soirée</button>
-          <span class="toast" id="toast" aria-live="polite"></span>
+          <button class="linkish" id="switch-btn" type="button">Changer de joueur</button>
+          <span class="hint" aria-hidden="true">·</span>
+          <button class="linkish" id="merge-toggle" type="button" aria-expanded="false" aria-controls="mergebox">Fusionner un autre lien</button>
         </div>
-        <p class="hint">Ce lien contient toute la soirée. Après chaque changement, renvoyez-le au groupe pour que les autres voient vos choix.</p>
-        <details>
-          <summary class="hint">Quelqu'un a envoyé une autre version du lien ?</summary>
-          <div class="actions" style="margin-top:10px">
-            <input class="input" id="merge-input" placeholder="Collez son lien ici" style="flex:1 1 240px">
-            <button class="btn" id="merge-btn" type="button">Fusionner</button>
-          </div>
-        </details>
+        <div class="mergebox" id="mergebox" hidden>
+          <input class="input" id="merge-input" placeholder="Collez ici le lien envoyé par quelqu'un d'autre" style="flex:1 1 240px">
+          <button class="btn" id="merge-btn" type="button">Fusionner</button>
+        </div>
       </section>
 
-      <div class="layout">
-        <section class="panel" id="mine">
-          <div class="result-head">
-            <h2 id="mine-title">Mes choix</h2>
-            <button class="reset" id="switch-btn" type="button">Changer de joueur</button>
-          </div>
-          <p class="hint">Cochez les jeux auxquels vous voulez jouer ce soir, gratuits ou payants. Plus un jeu est coché par le groupe, plus il monte dans le programme.</p>
-          <input class="input" id="pick-search" type="search" placeholder="Rechercher un jeu…" aria-label="Rechercher un jeu">
+      <div class="tabs" role="tablist" aria-label="Étapes">
+        <button class="tab" role="tab" id="tab-choose" aria-controls="pane-choose"><span class="n">1</span> Choisir <span class="badge" id="b-choose"></span></button>
+        <button class="tab" role="tab" id="tab-prog" aria-controls="pane-prog"><span class="n">2</span> Programme <span class="badge" id="b-prog"></span></button>
+        <button class="tab" role="tab" id="tab-prep" aria-controls="pane-prep"><span class="n">3</span> Préparer <span class="badge" id="b-prep"></span></button>
+      </div>
+
+      <section class="panel" id="pane-choose" role="tabpanel" aria-labelledby="tab-choose">
+        <div>
+          <h2 id="mine-title">Vos choix</h2>
+          <p style="margin-top:6px">Cochez les jeux auxquels vous voulez jouer, gratuits ou payants. Les jeux déjà choisis par le groupe sont en haut.</p>
+        </div>
+        <div class="toolbar2">
+          <input class="input" id="pick-search" type="search" placeholder="Rechercher parmi les 395 jeux…" aria-label="Rechercher un jeu">
           <div class="chips" role="group" aria-label="Afficher">
+            <button class="chip" id="show-all" type="button" aria-pressed="true">Tous</button>
             <button class="chip" id="show-group" type="button" aria-pressed="false">Choisis par le groupe</button>
-            <button class="chip" id="show-all" type="button" aria-pressed="true">Tous les jeux</button>
             <button class="chip" id="show-mine" type="button" aria-pressed="false">Mes choix</button>
           </div>
-          <div class="list" id="picks"></div>
-          <div class="actions">
-            <button class="btn" id="save-btn" type="button">Enregistrer et copier le lien</button>
-            <span class="hint" id="mine-count"></span>
-          </div>
-        </section>
-
-        <div class="col">
-          <section class="panel" id="programme">
-            <div class="result-head">
-              <h2>Programme de la soirée</h2>
-              <div class="chips"><button class="chip" id="offline" type="button" aria-pressed="false">Sans internet</button></div>
-            </div>
-            <p class="hint" id="prog-hint"></p>
-            <div class="grid small" id="prog"></div>
-            <h3 class="section-title" id="other-title">Autres propositions</h3>
-            <p class="hint" id="other-hint"></p>
-            <div class="grid small" id="other"></div>
-          </section>
-
-          <section class="panel" id="prep">
-            <div class="result-head">
-              <h2>Ma préparation</h2>
-              <span class="hint" id="prep-count"></span>
-            </div>
-            <p class="hint">Installez et mettez à jour chaque jeu du programme avant la soirée, puis cochez-le. Les autres verront que vous êtes prêt.</p>
-            <div class="list" id="prep-list"></div>
-          </section>
         </div>
-      </div>
+        <div class="list scroll" id="picks"></div>
+      </section>
+
+      <section class="panel" id="pane-prog" role="tabpanel" aria-labelledby="tab-prog" hidden>
+        <div class="line" style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:baseline">
+          <h2>Programme de la soirée</h2>
+          <button class="chip" id="offline" type="button" aria-pressed="false">Sans internet</button>
+        </div>
+        <p id="prog-hint"></p>
+        <div class="prog" id="prog"></div>
+        <h3 class="section-title" id="other-title">Autres propositions</h3>
+        <p class="hint" id="other-hint"></p>
+        <div class="prog" id="other"></div>
+      </section>
+
+      <section class="panel" id="pane-prep" role="tabpanel" aria-labelledby="tab-prep" hidden>
+        <div>
+          <h2>Ma préparation</h2>
+          <p style="margin-top:6px">Installez et mettez à jour chaque jeu du programme avant la soirée, puis cochez-le. Le groupe verra que vous êtes prêt.</p>
+        </div>
+        <div class="list" id="prep-list"></div>
+      </section>
     </div>
   </div>
 
   <footer>Rien n'est stocké sur un serveur : la soirée tient entièrement dans le lien. Images et pages des jeux : Steam.</footer>
+</div>
+
+<div class="sendbar" id="sendbar" hidden>
+  <div class="in">
+    <div class="state" id="state" aria-live="polite"><span class="dot"></span><span id="state-text"></span></div>
+    <button class="btn" id="share-btn" type="button">Envoyer au groupe</button>
+  </div>
 </div>
 
 <script src="games.js"></script>
@@ -169,8 +216,8 @@
 const norm = t => t.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 const slug = t => norm(t).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 const MODES = { l: "LAN", e: "Même écran", o: "Internet" };
-const games = (window.GAMES || []).map(([name, min, max, types, free, modes, link, desc]) => ({
-  name, min, max, desc: desc || "", free: !!free, modes: modes.split(""), key: norm(name),
+const games = (window.GAMES || []).map(([name, min, max, types, free, modes, link]) => ({
+  name, min, max, free: !!free, modes: modes.split(""), key: norm(name),
   appid: typeof link === "number" ? link : null,
   // identifiant stable : numéro Steam en base 36, sinon nom simplifié
   id: typeof link === "number" ? link.toString(36) : "~" + slug(name),
@@ -180,6 +227,8 @@ const games = (window.GAMES || []).map(([name, min, max, types, free, modes, lin
 const byId = new Map(games.map(g => [g.id, g]));
 const plural = (n, one, many) => n + " " + (n > 1 ? many : one);
 const same = (a, b) => a.toLowerCase() === b.toLowerCase();
+const range = g => g.min === g.max ? g.min + " j." : g.min + "–" + g.max + " j.";
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
 
 // ---------- Soirée dans le lien ----------
 // Format v2 : { v: 2, n: nom, p: [[pseudo, "choix.choix", "prêt.prêt"]] }
@@ -196,22 +245,16 @@ function decode(str) {
     const ids = s => String(s || "").split(".").filter(id => byId.has(id));
     return {
       name: String(d.n || "Soirée LAN").slice(0, 40),
-      players: (d.p || []).map(([n, a, b]) => ({
-        name: String(n).slice(0, 20),
-        picks: new Set(ids(a)),
-        ready: new Set(d.v === 2 ? ids(b) : [])
-      }))
+      players: (d.p || []).map(([n, a, b]) => ({ name: String(n).slice(0, 20), picks: new Set(ids(a)), ready: new Set(d.v === 2 ? ids(b) : []) }))
     };
   } catch { return null; }
 }
-function fromUrl(text) {
-  const m = String(text).match(/[#&]s=([A-Za-z0-9_-]+)/);
-  return m ? decode(m[1]) : null;
-}
-const linkFor = party => location.href.split("#")[0] + "#s=" + encode(party);
-function persist() { history.replaceState(null, "", "#s=" + encode(party)); }
+function fromUrl(text) { const m = String(text).match(/[#&]s=([A-Za-z0-9_-]+)/); return m ? decode(m[1]) : null; }
+const linkFor = () => location.href.split("#")[0] + "#s=" + encode(party);
 
 let party = fromUrl(location.hash);
+let sentState = party ? encode(party) : ""; // version déjà partagée avec le groupe
+function persist() { history.replaceState(null, "", "#s=" + encode(party)); updateSendbar(); }
 
 // Le joueur de cet onglet. Un lien reçu ouvre toujours l'écran « Rejoindre » :
 // on ne reprend jamais automatiquement le profil de la personne qui a envoyé le lien.
@@ -230,15 +273,37 @@ function addMe() {
   return p;
 }
 
-// ---------- Écrans ----------
-function show(id) { ["create", "join", "party"].forEach(x => document.getElementById(x).hidden = x !== id); }
+// ---------- Miniatures Steam ----------
+function thumb(g) {
+  const box = el("div", "thumb");
+  const ini = g.name.replace(/[^A-Za-z0-9 ]/g, "").split(" ").filter(Boolean).slice(0, 2).map(w => w[0]).join("").toUpperCase();
+  box.textContent = ini;
+  if (g.appid) {
+    const img = document.createElement("img"); img.alt = ""; img.loading = "lazy"; img.decoding = "async";
+    const urls = [
+      "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/" + g.appid + "/capsule_231x87.jpg",
+      "https://cdn.cloudflare.steamstatic.com/steam/apps/" + g.appid + "/capsule_231x87.jpg",
+      "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/" + g.appid + "/header.jpg"
+    ];
+    let i = 0;
+    img.onerror = () => { i++; if (i < urls.length) img.src = urls[i]; else img.remove(); };
+    img.onload = () => { box.firstChild && box.firstChild.nodeType === 3 && box.firstChild.remove(); };
+    img.src = urls[0]; box.append(img);
+  }
+  return box;
+}
 
+// ---------- Écrans ----------
+function show(id) {
+  ["create", "join", "party"].forEach(x => document.getElementById(x).hidden = x !== id);
+  document.getElementById("sendbar").hidden = id !== "party";
+}
 function showCreate() { show("create"); document.getElementById("first-name").value = lastPseudo; }
 document.getElementById("create-btn").addEventListener("click", () => {
   const name = document.getElementById("party-name").value.trim() || "Soirée LAN";
   const n = document.getElementById("first-name").value.trim();
   if (!n) { document.getElementById("first-name").focus(); return; }
-  party = { name, players: [] };
+  party = { name, players: [] }; sentState = "";
   setMe(n); addMe(); persist(); showParty();
 });
 
@@ -248,21 +313,19 @@ function showJoin() {
   document.getElementById("join-title").textContent = "Rejoindre « " + party.name + " »";
   const names = party.players.map(p => p.name);
   document.getElementById("join-who").textContent = names.length
-    ? (names.length > 1 ? names.slice(0, -1).join(", ") + " et " + names.at(-1) + " ont" : names[0] + " a")
-      + " déjà choisi. Entrez votre pseudo pour ajouter vos choix."
-    : "Entrez votre pseudo pour ajouter vos choix.";
-  const sum = document.getElementById("join-summary"); sum.replaceChildren();
+    ? (names.length > 1 ? names.slice(0, -1).join(", ") + " et " + names.at(-1) + " sont" : names[0] + " est") + " déjà là. Voici leurs choix :"
+    : "Entrez votre pseudo pour rejoindre la soirée.";
+  const sum = document.getElementById("join-summary"); sum.replaceChildren(); sum.hidden = !names.length;
   for (const p of party.players) {
-    const li = document.createElement("li");
-    const who = document.createElement("strong"); who.textContent = p.name + " : ";
-    const names = [...p.picks].map(id => byId.get(id).name).sort((a, b) => a.localeCompare(b, "fr"));
-    const what = document.createElement("span");
-    what.textContent = names.length ? names.slice(0, 8).join(", ") + (names.length > 8 ? " et " + (names.length - 8) + " autres" : "") : "rien choisi pour l'instant";
-    li.append(who, what); sum.append(li);
+    const row = el("div", "item"); row.style.gridTemplateColumns = "minmax(0, 1fr)"; row.style.cursor = "default";
+    const t = el("div", "txt");
+    const picked = [...p.picks].map(id => byId.get(id).name).sort((a, b) => a.localeCompare(b, "fr"));
+    t.append(el("span", "nm", p.name), el("span", "sub", picked.length ? picked.slice(0, 8).join(", ") + (picked.length > 8 ? " et " + (picked.length - 8) + " autres" : "") : "Rien choisi pour l'instant"));
+    row.append(t); sum.append(row);
   }
   const list = document.getElementById("join-list"); list.replaceChildren();
   for (const n of names) {
-    const b = document.createElement("button"); b.type = "button"; b.className = "chip"; b.textContent = "Je suis " + n;
+    const b = el("button", "chip", "Je suis " + n); b.type = "button";
     b.addEventListener("click", () => { setMe(n); showParty(); });
     list.append(b);
   }
@@ -272,19 +335,46 @@ function showJoin() {
 function join() {
   const n = document.getElementById("join-name").value.trim();
   if (!n) { document.getElementById("join-name").focus(); return; }
-  setMe(n); addMe(); persist(); showParty();
+  setMe(n); addMe(); persist(); showParty("choose");
 }
 document.getElementById("join-btn").addEventListener("click", join);
 document.getElementById("join-name").addEventListener("keydown", e => { if (e.key === "Enter") join(); });
 document.getElementById("switch-btn").addEventListener("click", showJoin);
+document.getElementById("merge-toggle").addEventListener("click", e => {
+  const box = document.getElementById("mergebox"); box.hidden = !box.hidden;
+  e.currentTarget.setAttribute("aria-expanded", !box.hidden);
+});
 
-function showParty() {
+function showParty(tab) {
   if (!me()) { showJoin(); return; }
   show("party");
   document.getElementById("mine-title").textContent = "Les choix de " + me().name;
-  const othersChose = party.players.some(p => p !== me() && p.picks.size);
-  setView(othersChose ? "group" : "all");
+  let saved = ""; try { saved = sessionStorage.getItem("lanjeux-tab") || ""; } catch {}
+  setTab(tab || saved || "choose");
 }
+
+// ---------- Onglets ----------
+const TABS = ["choose", "prog", "prep"];
+let tab = "choose";
+function setTab(t) {
+  tab = t;
+  try { sessionStorage.setItem("lanjeux-tab", t); } catch {}
+  TABS.forEach(x => {
+    document.getElementById("tab-" + x).setAttribute("aria-selected", x === t);
+    document.getElementById("tab-" + x).tabIndex = x === t ? 0 : -1;
+    document.getElementById("pane-" + x).hidden = x !== t;
+  });
+  renderAll();
+}
+TABS.forEach((x, i) => {
+  const b = document.getElementById("tab-" + x);
+  b.addEventListener("click", () => setTab(x));
+  b.addEventListener("keydown", e => {
+    if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+    const next = TABS[(i + (e.key === "ArrowRight" ? 1 : TABS.length - 1)) % TABS.length];
+    setTab(next); document.getElementById("tab-" + next).focus();
+  });
+});
 
 // ---------- Calculs ----------
 let offline = false;
@@ -299,45 +389,55 @@ function computeProgramme() {
   for (const [id, c] of count) {
     const g = byId.get(id);
     if (!net(g)) continue;
-    if (c >= need && fits(g)) prog.push(g); else other.push(g);
+    (c >= need && fits(g) ? prog : other).push(g);
   }
   const rank = (a, b) => count.get(b.id) - count.get(a.id) || a.name.localeCompare(b.name, "fr");
   return { prog: prog.sort(rank), other: other.sort(rank), count, need, n, fits };
 }
 
 // ---------- Rendu ----------
-function renderAll() { renderHeader(); renderPicks(); renderProgramme(); }
+function renderAll() {
+  const P = computeProgramme();
+  renderHeader(P); renderBadges(P);
+  if (tab === "choose") renderPicks();
+  if (tab === "prog") renderProgramme(P);
+  if (tab === "prep") renderPrep(P);
+  updateSendbar();
+}
 
-function renderHeader() {
+function renderHeader({ prog }) {
   document.getElementById("party-title").textContent = party.name;
   document.getElementById("party-count").textContent = plural(party.players.length, "joueur", "joueurs");
-  const { prog } = computeProgramme();
   const box = document.getElementById("players"); box.replaceChildren();
   for (const p of party.players) {
-    const chip = document.createElement("span");
-    chip.className = "player" + (p === me() ? " me" : "");
-    const label = document.createElement("span"); label.textContent = p.name;
     const readyN = prog.filter(g => p.ready.has(g.id)).length;
-    const count = document.createElement("small");
-    count.textContent = prog.length ? "prêt " + readyN + "/" + prog.length : plural(p.picks.size, "choix", "choix");
-    const del = document.createElement("button"); del.type = "button"; del.textContent = "×";
+    const chip = el("span", "player" + (p === me() ? " me" : "") + (prog.length && readyN === prog.length ? " ready-all" : ""));
+    chip.append(el("span", "", p.name + (p === me() ? " (vous)" : "")));
+    chip.append(el("span", "meter", prog.length ? (readyN === prog.length ? "✓ prêt" : "prêt " + readyN + "/" + prog.length) : plural(p.picks.size, "choix", "choix")));
+    const del = el("button", "", "×"); del.type = "button";
     del.setAttribute("aria-label", "Retirer " + p.name + " de la soirée");
     del.addEventListener("click", () => {
       if (del.dataset.confirm) { party.players = party.players.filter(x => x !== p); persist(); showParty(); }
       else { del.dataset.confirm = "1"; del.textContent = "Retirer ?"; }
     });
-    chip.append(label, count, del); box.append(chip);
+    chip.append(del); box.append(chip);
   }
 }
 
-let view = "all", q = "";
-const VIEWS = { group: "show-group", all: "show-all", mine: "show-mine" };
-function setView(v) {
-  view = v;
-  Object.entries(VIEWS).forEach(([k, id]) => document.getElementById(id).setAttribute("aria-pressed", k === v));
-  renderAll();
+function renderBadges({ prog }) {
+  const m = me();
+  const set = (id, text, cls) => { const b = document.getElementById(id); b.textContent = text; b.className = "badge" + (cls ? " " + cls : ""); b.hidden = text === ""; };
+  set("b-choose", m && m.picks.size ? String(m.picks.size) : "");
+  set("b-prog", prog.length ? String(prog.length) : "");
+  const left = prog.filter(g => !(m && m.ready.has(g.id))).length;
+  set("b-prep", prog.length ? (left ? String(left) : "✓") : "", prog.length ? (left ? "todo" : "done") : "");
 }
-Object.entries(VIEWS).forEach(([v, id]) => document.getElementById(id).addEventListener("click", () => setView(v)));
+
+let view = "all", q = "";
+const VIEWS = { all: "show-all", group: "show-group", mine: "show-mine" };
+Object.entries(VIEWS).forEach(([v, id]) => document.getElementById(id).addEventListener("click", () => {
+  view = v; Object.entries(VIEWS).forEach(([k, x]) => document.getElementById(x).setAttribute("aria-pressed", k === v)); renderPicks();
+}));
 
 function renderPicks() {
   const m = me();
@@ -345,166 +445,149 @@ function renderPicks() {
   const pickersOf = g => others.filter(p => p.picks.has(g.id)).map(p => p.name);
   const pool = games.filter(g => {
     if (q && !g.key.includes(q)) return false;
-    if (view === "group") return q ? true : pickersOf(g).length > 0; // une recherche fouille tout le catalogue
+    if (view === "group") return pickersOf(g).length > 0;
     if (view === "mine") return !!(m && m.picks.has(g.id));
     return true;
   });
-  if (view !== "mine") pool.sort((a, b) => pickersOf(b).length - pickersOf(a).length || a.name.localeCompare(b.name, "fr"));
+  // Les jeux du groupe d'abord, puis l'ordre alphabétique
+  pool.sort((a, b) => pickersOf(b).length - pickersOf(a).length || a.name.localeCompare(b.name, "fr"));
   const list = document.getElementById("picks"); list.replaceChildren();
   const frag = document.createDocumentFragment();
-  for (const g of pool) {
+  for (const g of pool.slice(0, 400)) {
     const pickers = pickersOf(g);
-    const row = document.createElement("div"); row.className = "row" + (pickers.length ? " taken" : "");
-    const cb = document.createElement("input"); cb.type = "checkbox"; cb.id = "pick-" + g.id;
-    cb.checked = !!(m && m.picks.has(g.id));
+    const on = !!(m && m.picks.has(g.id));
+    const row = el("label", "item" + (on ? " on" : ""));
+    const cb = document.createElement("input"); cb.type = "checkbox"; cb.checked = on;
+    cb.setAttribute("aria-label", "Choisir " + g.name);
     cb.addEventListener("change", () => {
-      const p = addMe();
-      cb.checked ? p.picks.add(g.id) : p.picks.delete(g.id);
-      persist(); renderHeader(); renderProgramme(); updateMineCount();
-      if (view === "mine") renderPicks();
+      const p = addMe(); cb.checked ? p.picks.add(g.id) : p.picks.delete(g.id);
+      row.classList.toggle("on", cb.checked);
+      persist(); const P = computeProgramme(); renderHeader(P); renderBadges(P);
+      if (view === "mine" && !cb.checked) row.remove();
     });
-    const nm = document.createElement("div"); nm.className = "nm";
-    const lab = document.createElement("label"); lab.htmlFor = cb.id;
-    lab.textContent = g.name + (g.free ? " · gratuit" : "");
-    nm.append(lab);
-    if (pickers.length) { const who = document.createElement("div"); who.className = "who"; who.textContent = "✓ " + pickers.join(", "); nm.append(who); }
-    const pl = document.createElement("span"); pl.className = "pl"; pl.textContent = g.min === g.max ? g.min + " j." : g.min + "–" + g.max;
-    row.append(cb, nm, pl); frag.append(row);
+    const t = el("div", "txt");
+    t.append(el("span", "nm", g.name));
+    const sub = el("span", "sub");
+    if (pickers.length) sub.append(el("span", "by", "✓ " + pickers.join(", ")), " · ");
+    sub.append((g.free ? "Gratuit" : "Payant") + " · " + g.modes.map(x => MODES[x]).join(", "));
+    t.append(sub);
+    row.append(cb, thumb(g), t, el("span", "pl", range(g)));
+    frag.append(row);
   }
-  if (!pool.length) {
-    const e = document.createElement("p"); e.className = "hint"; e.style.padding = "12px";
-    e.textContent = view === "mine" ? "Vous n'avez encore choisi aucun jeu."
-      : view === "group" ? "Les autres joueurs n'ont encore rien choisi. Passez sur « Tous les jeux »."
-      : "Aucun jeu ne correspond à cette recherche.";
-    frag.append(e);
-  }
+  if (!pool.length) frag.append(el("p", "empty", view === "mine" ? "Vous n'avez encore choisi aucun jeu."
+    : view === "group" ? "Les autres joueurs n'ont encore rien choisi." : "Aucun jeu ne correspond à cette recherche."));
   list.append(frag);
-  updateMineCount();
-}
-function updateMineCount() {
-  const m = me();
-  document.getElementById("mine-count").textContent = m ? plural(m.picks.size, "jeu choisi", "jeux choisis") : "";
 }
 
-function renderProgramme() {
-  const { prog, other, count, need, n, fits } = computeProgramme();
+function renderProgramme({ prog, other, count, need, n, fits }) {
   document.getElementById("prog-hint").textContent = !count.size
-    ? "Cochez des jeux dans la liste : ceux choisis par le groupe apparaîtront ici."
+    ? "Le programme est vide. Cochez des jeux à l'étape 1 : ceux choisis par au moins la moitié du groupe apparaîtront ici."
     : prog.length
-      ? plural(prog.length, "jeu retenu", "jeux retenus") + (n > 1 ? " : choisis par au moins " + need + " joueur" + (need > 1 ? "s" : "") + " sur " + n + " et jouables à " + n + "." : ".")
-      : "Aucun jeu n'a encore été choisi par au moins " + need + " joueurs sur " + n + ".";
-  document.getElementById("prog").replaceChildren(...prog.map(g => card(g, count.get(g.id), true)));
-  document.getElementById("other-title").hidden = !other.length;
-  document.getElementById("other-hint").hidden = !other.length;
-  document.getElementById("other-hint").textContent = "Choisis par moins de la moitié du groupe, ou pas jouables à " + n + ". Cochez-les aussi pour les faire entrer au programme.";
-  document.getElementById("other").replaceChildren(...other.map(g => card(g, count.get(g.id), false, fits(g) ? "" : "Max " + g.max + " joueurs")));
-  renderPrep(prog);
+      ? plural(prog.length, "jeu retenu", "jeux retenus") + (n > 1 ? ", choisis par au moins " + need + " joueur" + (need > 1 ? "s" : "") + " sur " + n + " et jouables à " + n + "." : ".")
+      : "Aucun jeu n'est encore choisi par au moins " + need + " joueurs sur " + n + ".";
+  document.getElementById("prog").replaceChildren(...prog.map(g => pcard(g, count.get(g.id), true)));
+  const hasOther = other.length > 0;
+  document.getElementById("other-title").hidden = !hasOther;
+  document.getElementById("other-hint").hidden = !hasOther;
+  document.getElementById("other-hint").textContent = "Pas assez choisis, ou pas jouables à " + n + ". Cochez-les à l'étape 1 pour les faire entrer au programme.";
+  document.getElementById("other").replaceChildren(...other.map(g => pcard(g, count.get(g.id), false, fits(g) ? "" : "Jouable jusqu'à " + g.max + " seulement")));
 }
 
-function renderPrep(prog) {
-  const m = me();
-  const list = document.getElementById("prep-list"); list.replaceChildren();
-  const left = prog.filter(g => !(m && m.ready.has(g.id))).length;
-  document.getElementById("prep-count").textContent = prog.length ? (left ? plural(left, "jeu", "jeux") + " à préparer" : "") : "";
-  if (!prog.length) {
-    const e = document.createElement("p"); e.className = "hint"; e.style.padding = "12px";
-    e.textContent = "Rien à préparer pour l'instant : le programme est vide.";
-    list.append(e); return;
-  }
-  if (!left) {
-    const e = document.createElement("p"); e.className = "done"; e.style.padding = "12px 12px 0";
-    e.textContent = "Vous êtes prêt pour tout le programme.";
-    list.append(e);
-  }
-  for (const g of prog) {
-    const row = document.createElement("div"); row.className = "row";
-    const cb = document.createElement("input"); cb.type = "checkbox"; cb.id = "ready-" + g.id;
-    cb.checked = !!(m && m.ready.has(g.id));
-    cb.addEventListener("change", () => {
-      const p = addMe(); cb.checked ? p.ready.add(g.id) : p.ready.delete(g.id);
-      persist(); renderHeader(); renderProgramme();
-    });
-    const nm = document.createElement("div"); nm.className = "nm";
-    const lab = document.createElement("label"); lab.htmlFor = cb.id; lab.textContent = g.name;
-    const sub = document.createElement("div"); sub.className = "hint";
-    sub.textContent = (g.free ? "Gratuit" : "Payant") + " · installé et à jour";
-    nm.append(lab, sub);
-    const a = document.createElement("a"); a.href = g.url; a.target = "_blank"; a.rel = "noopener"; a.textContent = "Page du jeu";
-    row.append(cb, nm, a); list.append(row);
-  }
-}
-
-function card(g, picks, inProg, note) {
-  const a = document.createElement("a"); a.className = "game"; a.href = g.url; a.target = "_blank"; a.rel = "noopener";
-  const cover = document.createElement("div"); cover.className = "cover";
-  const ini = document.createElement("span"); ini.className = "initials";
-  ini.textContent = g.name.replace(/[^A-Za-z0-9 ]/g, "").split(" ").filter(Boolean).slice(0, 2).map(w => w[0]).join("").toUpperCase();
-  cover.append(ini);
-  if (g.appid) {
-    const img = document.createElement("img"); img.alt = ""; img.loading = "lazy";
-    const urls = ["https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/" + g.appid + "/header.jpg",
-                  "https://cdn.cloudflare.steamstatic.com/steam/apps/" + g.appid + "/header.jpg"];
-    let i = 0; img.onerror = () => { i++; i < urls.length ? img.src = urls[i] : img.remove(); };
-    img.onload = () => ini.remove(); img.src = urls[0]; cover.append(img);
-  }
-  const body = document.createElement("div"); body.className = "body";
-  const top = document.createElement("div"); top.className = "top";
-  const h = document.createElement("h2"); h.textContent = g.name;
-  const pl = document.createElement("span"); pl.className = "players";
-  pl.textContent = g.min === g.max ? g.min + " j." : g.min + "–" + g.max + " j.";
-  top.append(h, pl); body.append(top);
-  const tags = document.createElement("div"); tags.className = "tags";
-  const price = document.createElement("span"); price.className = "tag price " + (g.free ? "free" : "paid");
-  price.textContent = g.free ? "Gratuit" : "Payant";
-  const pk = document.createElement("span"); pk.className = "picked";
-  pk.textContent = "choisi par " + picks + "/" + party.players.length;
-  tags.append(price, pk); body.append(tags);
-  if (note) { const nt = document.createElement("div"); nt.className = "hint"; nt.textContent = note; body.append(nt); }
+function pcard(g, picks, inProg, note) {
+  const c = el("article", "pcard" + (inProg ? "" : " dim"));
+  const a = document.createElement("a"); a.href = g.url; a.target = "_blank"; a.rel = "noopener"; a.append(thumb(g));
+  a.setAttribute("aria-label", "Page de " + g.name);
+  const t = el("div", "txt");
+  const top = el("div", "top"); top.append(el("h3", "", g.name), el("span", "players", range(g)));
+  t.append(top);
+  t.append(el("span", "meta", (g.free ? "Gratuit" : "Payant") + " · choisi par " + picks + "/" + party.players.length + (note ? " · " + note : "")));
   if (inProg) {
-    const r = document.createElement("div"); r.className = "ready";
+    const readyN = party.players.filter(p => p.ready.has(g.id)).length;
+    const bar = el("div", "bar"); const fill = document.createElement("i");
+    fill.style.width = (party.players.length ? readyN / party.players.length * 100 : 0) + "%"; bar.append(fill);
+    bar.setAttribute("role", "img"); bar.setAttribute("aria-label", readyN + " joueurs prêts sur " + party.players.length);
+    const r = el("div", "ready");
     for (const p of party.players) {
-      const s = document.createElement("span"); const ok = p.ready.has(g.id);
-      s.className = ok ? "ok" : ""; s.textContent = (ok ? "✓ " : "○ ") + p.name;
+      const ok = p.ready.has(g.id);
+      const s = el("span", ok ? "ok" : "", (ok ? "✓ " : "○ ") + p.name);
       s.title = ok ? p.name + " est prêt" : p.name + " doit encore l'installer ou le mettre à jour";
       r.append(s);
     }
-    body.append(r);
+    t.append(bar, r);
   }
-  const md = document.createElement("div"); md.className = "modes"; md.textContent = g.modes.map(m => MODES[m]).join(" · ");
-  body.append(md);
-  a.append(cover, body);
-  return a;
+  c.append(a, t);
+  return c;
 }
 
-// ---------- Actions ----------
-let toastTimer;
-function toast(msg) {
-  const t = document.getElementById("toast"); t.textContent = msg;
-  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.textContent = "", 4000);
+function renderPrep({ prog }) {
+  const m = me();
+  const list = document.getElementById("prep-list"); list.replaceChildren();
+  if (!prog.length) { list.append(el("p", "empty", "Rien à préparer pour l'instant : le programme est vide.")); return; }
+  const left = prog.filter(g => !(m && m.ready.has(g.id))).length;
+  if (!left) list.append(el("p", "empty done-msg", "Vous êtes prêt pour tout le programme. Pensez à envoyer le lien au groupe."));
+  for (const g of prog) {
+    const on = !!(m && m.ready.has(g.id));
+    const row = el("label", "item" + (on ? " on" : ""));
+    const cb = document.createElement("input"); cb.type = "checkbox"; cb.checked = on;
+    cb.setAttribute("aria-label", g.name + " installé et à jour");
+    cb.addEventListener("change", () => {
+      const p = addMe(); cb.checked ? p.ready.add(g.id) : p.ready.delete(g.id);
+      persist(); renderAll();
+    });
+    const t = el("div", "txt");
+    t.append(el("span", "nm", g.name), el("span", "sub", on ? "Installé et à jour" : "À installer ou mettre à jour" + (g.free ? " · gratuit" : "")));
+    const a = document.createElement("a"); a.href = g.url; a.target = "_blank"; a.rel = "noopener"; a.textContent = "Page du jeu";
+    a.addEventListener("click", e => e.stopPropagation());
+    row.append(cb, thumb(g), t, a); list.append(row);
+  }
+}
+
+// ---------- Envoi ----------
+function updateSendbar() {
+  if (!party) return;
+  const dirty = encode(party) !== sentState;
+  document.getElementById("state").classList.toggle("dirty", dirty);
+  document.getElementById("state-text").textContent = dirty
+    ? "Vos changements ne sont pas encore envoyés"
+    : "Le groupe a déjà ce lien";
 }
 async function share() {
   persist();
-  try { await navigator.clipboard.writeText(linkFor(party)); toast("Lien copié. Collez-le dans le groupe."); }
-  catch { toast("Copie impossible ici : copiez le lien dans la barre d'adresse."); }
+  const url = linkFor();
+  const coarse = matchMedia("(pointer: coarse)").matches;
+  try {
+    if (coarse && navigator.share) await navigator.share({ title: party.name, text: "On prépare « " + party.name + " » : choisis tes jeux ici", url });
+    else await navigator.clipboard.writeText(url);
+    sentState = encode(party); updateSendbar();
+    if (!coarse || !navigator.share) flash("Lien copié : collez-le dans le groupe.");
+  } catch (e) {
+    if (e && e.name === "AbortError") return;
+    flash("Copie impossible : copiez le lien dans la barre d'adresse.");
+  }
+}
+function flash(msg) {
+  const t = document.getElementById("state-text"); t.textContent = msg;
+  clearTimeout(flash.t); flash.t = setTimeout(updateSendbar, 3500);
 }
 document.getElementById("share-btn").addEventListener("click", share);
-document.getElementById("save-btn").addEventListener("click", () => { addMe(); renderAll(); share(); });
 document.getElementById("pick-search").addEventListener("input", e => { q = norm(e.target.value.trim()); renderPicks(); });
 document.getElementById("offline").addEventListener("click", e => {
-  offline = !offline; e.currentTarget.setAttribute("aria-pressed", offline); renderHeader(); renderProgramme();
+  offline = !offline; e.currentTarget.setAttribute("aria-pressed", offline); renderAll();
 });
 document.getElementById("merge-btn").addEventListener("click", () => {
   const other = fromUrl(document.getElementById("merge-input").value);
-  if (!other) { toast("Ce lien ne contient pas de soirée."); return; }
+  if (!other) { flash("Ce lien ne contient pas de soirée."); return; }
   for (const op of other.players) {
     const p = party.players.find(x => same(x.name, op.name));
     if (!p) party.players.push(op);
     else { op.picks.forEach(id => p.picks.add(id)); op.ready.forEach(id => p.ready.add(id)); }
   }
   document.getElementById("merge-input").value = "";
-  persist(); renderAll(); toast("Liens fusionnés.");
+  document.getElementById("mergebox").hidden = true;
+  persist(); renderAll(); flash("Liens fusionnés.");
 });
-window.addEventListener("hashchange", () => { const p = fromUrl(location.hash); if (p) { party = p; showParty(); } });
+window.addEventListener("hashchange", () => { const p = fromUrl(location.hash); if (p) { party = p; sentState = encode(p); showParty(); } });
+window.addEventListener("beforeunload", e => { if (party && me() && encode(party) !== sentState) { e.preventDefault(); e.returnValue = ""; } });
 
 party ? showParty() : showCreate();
 </script>
