@@ -135,3 +135,5 @@ footer { color: var(--muted); font-size: 13px; }
   .toolbar .sort, .toolbar .filters-toggle, .toolbar .dice { flex: 1 1 0; min-width: 0; white-space: nowrap; font-size: 14px; padding-inline: 8px; }
 }
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+
+footer a { color: var(--accent); }
