@@ -33,7 +33,14 @@
 .row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 10px; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--line); }
 .row:last-child { border-bottom: 0; }
 .row input { width: 18px; height: 18px; accent-color: var(--accent); margin: 0; }
-.row .nm { overflow-wrap: anywhere; }
+.row .nm { overflow-wrap: anywhere; display: grid; gap: 2px; min-width: 0; }
+.row .nm label { cursor: pointer; }
+.who { font-size: 12px; color: var(--free); }
+.who .wish { color: var(--accent); }
+.row.taken { background: color-mix(in srgb, var(--free-bg) 45%, transparent); }
+.summary-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 14px; }
+.summary-list strong { font-weight: 600; }
+.summary-list span { color: var(--muted); }
 .row .pl { font: 500 12px var(--mono); color: var(--muted); white-space: nowrap; }
 .star { border: 0; background: none; cursor: pointer; font-size: 18px; line-height: 1; color: var(--line); padding: 2px 4px; }
 .star[aria-pressed="true"] { color: var(--accent); }
@@ -73,6 +80,7 @@
   <section class="panel" id="join" hidden>
     <h2 id="join-title"></h2>
     <p id="join-who"></p>
+    <ul class="summary-list" id="join-summary"></ul>
     <div class="field"><label for="join-name">Votre pseudo</label>
       <input class="input" id="join-name" maxlength="20" placeholder="Votre pseudo"></div>
     <div class="actions"><button class="btn" id="join-btn" type="button">Choisir mes jeux</button></div>
@@ -114,6 +122,7 @@
           <p class="hint">Les jeux gratuits comptent automatiquement pour tout le monde. Cochez seulement les jeux payants que vous avez, et mettez une ★ sur 3 jeux maximum dont vous avez envie.</p>
           <input class="input" id="owned-search" type="search" placeholder="Rechercher un jeu…" aria-label="Rechercher dans mes jeux">
           <div class="chips" role="group" aria-label="Afficher">
+            <button class="chip" id="show-group" type="button" aria-pressed="false">Choisis par le groupe</button>
             <button class="chip" id="show-all" type="button" aria-pressed="true">Tous les payants</button>
             <button class="chip" id="show-mine" type="button" aria-pressed="false">Seulement les miens</button>
             <button class="chip" id="show-free" type="button" aria-pressed="false">Gratuits (pour voter)</button>
@@ -237,7 +246,8 @@ function showParty() {
   document.getElementById("join").hidden = true;
   document.getElementById("party").hidden = false;
   document.getElementById("mine-title").textContent = "Les jeux de " + meName;
-  renderAll();
+  const othersChose = party.players.some(p => p.name.toLowerCase() !== meName.toLowerCase() && (p.owned.size || p.votes.size));
+  setView(othersChose ? "group" : "all");
 }
 function showJoin() {
   setMe("");
@@ -249,6 +259,15 @@ function showJoin() {
     ? (names.length > 1 ? names.slice(0, -1).join(", ") + " et " + names.at(-1) + " ont" : names[0] + " a")
       + " déjà choisi. Entrez votre pseudo pour ajouter vos jeux."
     : "Entrez votre pseudo pour ajouter vos jeux.";
+  const sum = document.getElementById("join-summary"); sum.replaceChildren();
+  for (const p of party.players) {
+    const li = document.createElement("li");
+    const who = document.createElement("strong"); who.textContent = p.name + " : ";
+    const names = [...p.owned].map(id => byId.get(id).name).sort((a, b) => a.localeCompare(b, "fr"));
+    const what = document.createElement("span");
+    what.textContent = names.length ? names.slice(0, 8).join(", ") + (names.length > 8 ? " et " + (names.length - 8) + " autres" : "") : "aucun jeu payant coché pour l'instant";
+    li.append(who, what); sum.append(li);
+  }
   const list = document.getElementById("join-list"); list.replaceChildren();
   for (const n of names) {
     const b = document.createElement("button"); b.type = "button"; b.className = "chip"; b.textContent = "Je suis " + n;
@@ -293,15 +312,24 @@ let view = "all", q = "";
 function renderOwned() {
   const me = mePlayer(false);
   const list = document.getElementById("owned"); list.replaceChildren();
+  // Ce que les autres joueurs ont choisi, pour chaque jeu
+  const others = party.players.filter(p => p !== me);
+  const ownersOf = g => others.filter(p => p.owned.has(g.id)).map(p => p.name);
+  const wishersOf = g => others.filter(p => p.votes.has(g.id)).map(p => p.name);
   const pool = games.filter(g => {
-    if (view === "free") { if (!g.free) return false; }
-    else if (g.free) return false;
-    if (view === "mine" && !(me && me.owned.has(g.id))) return false;
-    return !q || g.key.includes(q);
+    if (q && !g.key.includes(q)) return false;
+    if (view === "group") return ownersOf(g).length > 0 || wishersOf(g).length > 0;
+    if (view === "free") return g.free;
+    if (g.free) return false;
+    if (view === "mine") return !!(me && me.owned.has(g.id));
+    return true;
   });
+  const weight = g => ownersOf(g).length * 2 + wishersOf(g).length;
+  if (view === "group" || view === "all") pool.sort((a, b) => weight(b) - weight(a) || a.name.localeCompare(b.name, "fr"));
   const frag = document.createDocumentFragment();
   for (const g of pool) {
-    const row = document.createElement("div"); row.className = "row";
+    const owners = ownersOf(g), wishers = wishersOf(g);
+    const row = document.createElement("div"); row.className = "row" + (owners.length ? " taken" : "");
     const cb = document.createElement("input"); cb.type = "checkbox"; cb.id = "own-" + g.id;
     cb.checked = g.free || !!(me && me.owned.has(g.id)); cb.disabled = g.free;
     cb.addEventListener("change", () => {
@@ -310,7 +338,19 @@ function renderOwned() {
       persist(); renderHeader(); renderResults(); updateMineCount();
       if (view === "mine") renderOwned();
     });
-    const lab = document.createElement("label"); lab.className = "nm"; lab.htmlFor = cb.id; lab.textContent = g.name;
+    const nm = document.createElement("div"); nm.className = "nm";
+    const lab = document.createElement("label"); lab.htmlFor = cb.id; lab.textContent = g.name;
+    nm.append(lab);
+    if (owners.length || wishers.length) {
+      const who = document.createElement("div"); who.className = "who";
+      if (owners.length) who.append("✓ " + owners.join(", "));
+      if (wishers.length) {
+        const w = document.createElement("span"); w.className = "wish";
+        w.textContent = (owners.length ? " · " : "") + "★ " + wishers.join(", ");
+        who.append(w);
+      }
+      nm.append(who);
+    }
     const pl = document.createElement("span"); pl.className = "pl"; pl.textContent = g.min === g.max ? g.min + " j." : g.min + "–" + g.max;
     const star = document.createElement("button"); star.type = "button"; star.className = "star"; star.textContent = "★";
     star.setAttribute("aria-label", "J'ai envie de jouer à " + g.name);
@@ -324,11 +364,13 @@ function renderOwned() {
       }
       persist(); renderAll();
     });
-    row.append(cb, lab, pl, star); frag.append(row);
+    row.append(cb, nm, pl, star); frag.append(row);
   }
   if (!pool.length) {
     const e = document.createElement("p"); e.className = "hint"; e.style.padding = "12px";
-    e.textContent = view === "mine" ? "Vous n'avez encore coché aucun jeu." : "Aucun jeu ne correspond à cette recherche.";
+    e.textContent = view === "mine" ? "Vous n'avez encore coché aucun jeu."
+      : view === "group" ? "Les autres joueurs n'ont encore rien choisi. Passez sur « Tous les payants »."
+      : "Aucun jeu ne correspond à cette recherche.";
     frag.append(e);
   }
   list.append(frag);
@@ -420,12 +462,13 @@ document.getElementById("save-btn").addEventListener("click", () => {
   renderAll(); share();
 });
 document.getElementById("owned-search").addEventListener("input", e => { q = norm(e.target.value.trim()); renderOwned(); });
-[["show-all", "all"], ["show-mine", "mine"], ["show-free", "free"]].forEach(([id, v]) =>
-  document.getElementById(id).addEventListener("click", () => {
-    view = v;
-    ["show-all", "show-mine", "show-free"].forEach(x => document.getElementById(x).setAttribute("aria-pressed", x === id));
-    renderOwned();
-  }));
+const VIEWS = { group: "show-group", all: "show-all", mine: "show-mine", free: "show-free" };
+function setView(v) {
+  view = v;
+  Object.entries(VIEWS).forEach(([k, id]) => document.getElementById(id).setAttribute("aria-pressed", k === v));
+  renderAll();
+}
+Object.entries(VIEWS).forEach(([v, id]) => document.getElementById(id).addEventListener("click", () => setView(v)));
 document.getElementById("offline").addEventListener("click", e => {
   offline = !offline; e.currentTarget.setAttribute("aria-pressed", offline); renderResults();
 });
