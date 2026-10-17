@@ -18,47 +18,47 @@
 .input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 .btn { font: 700 15px/1 var(--display); color: var(--accent-fg); background: var(--accent); border: 0; border-radius: 8px; padding: 12px 16px; cursor: pointer; }
 .btn:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
-.btn:disabled { opacity: .5; cursor: default; }
 .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .players-list { display: flex; flex-wrap: wrap; gap: 8px; }
 .player { display: inline-flex; align-items: center; gap: 8px; font: 500 14px/1 var(--body); background: var(--chip); border-radius: 999px; padding: 6px 6px 6px 12px; }
 .player small { color: var(--muted); font: 500 12px var(--mono); }
-.player button { border: 0; background: none; color: var(--muted); cursor: pointer; font-size: 16px; line-height: 1; padding: 2px 6px; border-radius: 999px; }
+.player button { border: 0; background: none; color: var(--muted); cursor: pointer; font-size: 14px; line-height: 1; padding: 2px 6px; border-radius: 999px; }
 .player button:hover { color: var(--fg); background: var(--line); }
 .player.me { background: var(--accent); color: var(--accent-fg); }
 .player.me small, .player.me button { color: var(--accent-fg); }
 .layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 16px; align-items: start; }
 @media (max-width: 860px) { .layout { grid-template-columns: minmax(0, 1fr); } }
-.owned { max-height: 520px; overflow-y: auto; border: 1px solid var(--line); border-radius: 8px; }
-.row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 10px; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+.col { display: grid; gap: 16px; min-width: 0; }
+.list { max-height: 520px; overflow-y: auto; border: 1px solid var(--line); border-radius: 8px; }
+.row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--line); }
 .row:last-child { border-bottom: 0; }
 .row input { width: 18px; height: 18px; accent-color: var(--accent); margin: 0; }
 .row .nm { overflow-wrap: anywhere; display: grid; gap: 2px; min-width: 0; }
 .row .nm label { cursor: pointer; }
-.who { font-size: 12px; color: var(--free); }
-.who .wish { color: var(--accent); }
-.row.taken { background: color-mix(in srgb, var(--free-bg) 45%, transparent); }
-.summary-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 14px; }
-.summary-list strong { font-weight: 600; }
-.summary-list span { color: var(--muted); }
 .row .pl { font: 500 12px var(--mono); color: var(--muted); white-space: nowrap; }
-.star { border: 0; background: none; cursor: pointer; font-size: 18px; line-height: 1; color: var(--line); padding: 2px 4px; }
-.star[aria-pressed="true"] { color: var(--accent); }
-.star:focus-visible { outline: 2px solid var(--accent); border-radius: 4px; }
+.row.taken { background: color-mix(in srgb, var(--free-bg) 45%, transparent); }
+.who { font-size: 12px; color: var(--free); }
+.row a { font-size: 13px; color: var(--accent); white-space: nowrap; }
 .hint { font-size: 13px; color: var(--muted); }
 .toast { font-size: 14px; color: var(--free); font-weight: 600; }
 .result-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; }
-.votes { font: 700 12px/1 var(--mono); color: var(--accent); }
-.missing { font-size: 12.5px; color: var(--paid); }
 .section-title { font: 700 16px/1.2 var(--display); margin: 8px 0 0; }
 .grid.small { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+.picked { font: 600 12px/1 var(--mono); color: var(--accent); }
+.ready { display: flex; flex-wrap: wrap; gap: 4px; }
+.ready span { font-size: 11.5px; padding: 3px 7px; border-radius: 999px; background: var(--chip); color: var(--muted); }
+.ready span.ok { background: var(--free-bg); color: var(--free); }
+.summary-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 14px; }
+.summary-list strong { font-weight: 600; }
+.summary-list span { color: var(--muted); }
+.done { color: var(--free); font-weight: 600; }
 </style>
 
 <div class="wrap">
   <header>
     <nav class="nav"><a href="./">Catalogue</a><a href="soiree.html" aria-current="page">Soirée LAN</a></nav>
     <h1>Soirée <span>LAN</span></h1>
-    <p>Chacun coche les jeux qu'il possède, et le site trouve ceux auxquels <strong>tout le groupe</strong> peut jouer ce soir.</p>
+    <p>Choisissez ensemble les jeux de la soirée, pour que chacun puisse les installer et les mettre à jour <strong>avant</strong> d'arriver.</p>
   </header>
 
   <!-- Écran de création -->
@@ -66,8 +66,9 @@
     <h2>Créer une soirée</h2>
     <ol class="steps">
       <li>Donnez un nom à la soirée et entrez votre pseudo.</li>
-      <li>Cochez les jeux que vous possédez, puis copiez le lien.</li>
-      <li>Envoyez le lien au groupe : chacun entre son pseudo, ajoute ses jeux et renvoie le lien mis à jour.</li>
+      <li>Cochez les jeux auxquels vous voulez jouer, puis copiez le lien.</li>
+      <li>Envoyez le lien au groupe : chacun ajoute ses choix et renvoie le lien.</li>
+      <li>Les jeux choisis par le groupe forment le programme. Chacun les installe et se marque « prêt ».</li>
     </ol>
     <div class="field"><label for="party-name">Nom de la soirée</label>
       <input class="input" id="party-name" maxlength="40" placeholder="LAN chez Max, samedi"></div>
@@ -83,9 +84,9 @@
     <ul class="summary-list" id="join-summary"></ul>
     <div class="field"><label for="join-name">Votre pseudo</label>
       <input class="input" id="join-name" maxlength="20" placeholder="Votre pseudo"></div>
-    <div class="actions"><button class="btn" id="join-btn" type="button">Choisir mes jeux</button></div>
+    <div class="actions"><button class="btn" id="join-btn" type="button">Rejoindre et choisir mes jeux</button></div>
     <div id="join-existing" hidden>
-      <p class="hint">Vous avez déjà choisi vos jeux ? Reprenez votre profil :</p>
+      <p class="hint">Vous avez déjà rejoint cette soirée ? Reprenez votre profil :</p>
       <div class="chips" id="join-list"></div>
     </div>
   </section>
@@ -103,7 +104,7 @@
           <button class="btn" id="share-btn" type="button">Copier le lien de la soirée</button>
           <span class="toast" id="toast" aria-live="polite"></span>
         </div>
-        <p class="hint">Ce lien contient toute la soirée. Après avoir coché vos jeux, renvoyez-le au groupe pour que les autres voient vos choix.</p>
+        <p class="hint">Ce lien contient toute la soirée. Après chaque changement, renvoyez-le au groupe pour que les autres voient vos choix.</p>
         <details>
           <summary class="hint">Quelqu'un a envoyé une autre version du lien ?</summary>
           <div class="actions" style="margin-top:10px">
@@ -116,36 +117,45 @@
       <div class="layout">
         <section class="panel" id="mine">
           <div class="result-head">
-            <h2 id="mine-title">Mes jeux</h2>
+            <h2 id="mine-title">Mes choix</h2>
             <button class="reset" id="switch-btn" type="button">Changer de joueur</button>
           </div>
-          <p class="hint">Les jeux gratuits comptent automatiquement pour tout le monde. Cochez seulement les jeux payants que vous avez, et mettez une ★ sur 3 jeux maximum dont vous avez envie.</p>
-          <input class="input" id="owned-search" type="search" placeholder="Rechercher un jeu…" aria-label="Rechercher dans mes jeux">
+          <p class="hint">Cochez les jeux auxquels vous voulez jouer ce soir, gratuits ou payants. Plus un jeu est coché par le groupe, plus il monte dans le programme.</p>
+          <input class="input" id="pick-search" type="search" placeholder="Rechercher un jeu…" aria-label="Rechercher un jeu">
           <div class="chips" role="group" aria-label="Afficher">
             <button class="chip" id="show-group" type="button" aria-pressed="false">Choisis par le groupe</button>
-            <button class="chip" id="show-all" type="button" aria-pressed="true">Tous les payants</button>
-            <button class="chip" id="show-mine" type="button" aria-pressed="false">Seulement les miens</button>
-            <button class="chip" id="show-free" type="button" aria-pressed="false">Gratuits (pour voter)</button>
+            <button class="chip" id="show-all" type="button" aria-pressed="true">Tous les jeux</button>
+            <button class="chip" id="show-mine" type="button" aria-pressed="false">Mes choix</button>
           </div>
-          <div class="owned" id="owned"></div>
+          <div class="list" id="picks"></div>
           <div class="actions">
             <button class="btn" id="save-btn" type="button">Enregistrer et copier le lien</button>
             <span class="hint" id="mine-count"></span>
           </div>
         </section>
 
-        <section class="panel" id="results">
-          <div class="result-head">
-            <h2>On peut jouer à…</h2>
-            <div class="chips">
-              <button class="chip" id="offline" type="button" aria-pressed="false">Sans internet</button>
+        <div class="col">
+          <section class="panel" id="programme">
+            <div class="result-head">
+              <h2>Programme de la soirée</h2>
+              <div class="chips"><button class="chip" id="offline" type="button" aria-pressed="false">Sans internet</button></div>
             </div>
-          </div>
-          <p class="hint" id="results-hint"></p>
-          <div class="grid small" id="ok"></div>
-          <h3 class="section-title" id="almost-title">Presque : il manque un seul joueur</h3>
-          <div class="grid small" id="almost"></div>
-        </section>
+            <p class="hint" id="prog-hint"></p>
+            <div class="grid small" id="prog"></div>
+            <h3 class="section-title" id="other-title">Autres propositions</h3>
+            <p class="hint" id="other-hint"></p>
+            <div class="grid small" id="other"></div>
+          </section>
+
+          <section class="panel" id="prep">
+            <div class="result-head">
+              <h2>Ma préparation</h2>
+              <span class="hint" id="prep-count"></span>
+            </div>
+            <p class="hint">Installez et mettez à jour chaque jeu du programme avant la soirée, puis cochez-le. Les autres verront que vous êtes prêt.</p>
+            <div class="list" id="prep-list"></div>
+          </section>
+        </div>
       </div>
     </div>
   </div>
@@ -169,11 +179,12 @@ const games = (window.GAMES || []).map(([name, min, max, types, free, modes, lin
 })).sort((a, b) => a.name.localeCompare(b.name, "fr"));
 const byId = new Map(games.map(g => [g.id, g]));
 const plural = (n, one, many) => n + " " + (n > 1 ? many : one);
+const same = (a, b) => a.toLowerCase() === b.toLowerCase();
 
 // ---------- Soirée dans le lien ----------
-// Format : { n: nom, p: [[pseudo, "id.id.id", "id.id"]] }
+// Format v2 : { v: 2, n: nom, p: [[pseudo, "choix.choix", "prêt.prêt"]] }
 function encode(party) {
-  const json = JSON.stringify({ n: party.name, p: party.players.map(p => [p.name, [...p.owned].join("."), [...p.votes].join(".")]) });
+  const json = JSON.stringify({ v: 2, n: party.name, p: party.players.map(p => [p.name, [...p.picks].join("."), [...p.ready].join(".")]) });
   const bytes = new TextEncoder().encode(json);
   let bin = ""; bytes.forEach(b => bin += String.fromCharCode(b));
   return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
@@ -181,14 +192,14 @@ function encode(party) {
 function decode(str) {
   try {
     const bin = atob(str.replace(/-/g, "+").replace(/_/g, "/"));
-    const json = new TextDecoder().decode(Uint8Array.from(bin, c => c.charCodeAt(0)));
-    const d = JSON.parse(json);
+    const d = JSON.parse(new TextDecoder().decode(Uint8Array.from(bin, c => c.charCodeAt(0))));
+    const ids = s => String(s || "").split(".").filter(id => byId.has(id));
     return {
       name: String(d.n || "Soirée LAN").slice(0, 40),
-      players: (d.p || []).map(([n, o, v]) => ({
+      players: (d.p || []).map(([n, a, b]) => ({
         name: String(n).slice(0, 20),
-        owned: new Set(String(o || "").split(".").filter(id => byId.has(id))),
-        votes: new Set(String(v || "").split(".").filter(id => byId.has(id)).slice(0, 3))
+        picks: new Set(ids(a)),
+        ready: new Set(d.v === 2 ? ids(b) : [])
       }))
     };
   } catch { return null; }
@@ -198,74 +209,55 @@ function fromUrl(text) {
   return m ? decode(m[1]) : null;
 }
 const linkFor = party => location.href.split("#")[0] + "#s=" + encode(party);
+function persist() { history.replaceState(null, "", "#s=" + encode(party)); }
 
 let party = fromUrl(location.hash);
+
 // Le joueur de cet onglet. Un lien reçu ouvre toujours l'écran « Rejoindre » :
 // on ne reprend jamais automatiquement le profil de la personne qui a envoyé le lien.
 let meName = "", lastPseudo = "";
 try { meName = sessionStorage.getItem("lanjeux-me") || ""; } catch {}
 try { lastPseudo = localStorage.getItem("lanjeux-pseudo") || ""; } catch {}
-
-// ---------- Création ----------
-function showCreate() {
-  document.getElementById("create").hidden = false;
-  document.getElementById("party").hidden = true;
-  document.getElementById("join").hidden = true;
-  document.getElementById("first-name").value = lastPseudo;
-}
-document.getElementById("create-btn").addEventListener("click", () => {
-  const name = document.getElementById("party-name").value.trim() || "Soirée LAN";
-  const me = document.getElementById("first-name").value.trim();
-  if (!me) { document.getElementById("first-name").focus(); return; }
-  setMe(me);
-  party = { name, players: [{ name: me, owned: new Set(), votes: new Set() }] };
-  persist();
-  showParty();
-});
-
-// ---------- Moi ----------
 function setMe(n) {
   meName = n;
   try { sessionStorage.setItem("lanjeux-me", n); } catch {}
   if (n) { lastPseudo = n; try { localStorage.setItem("lanjeux-pseudo", n); } catch {} }
 }
-function mePlayer(create) {
-  const n = meName.trim();
-  if (!n) return null;
-  let p = party.players.find(p => p.name.toLowerCase() === n.toLowerCase());
-  if (!p && create) { p = { name: n, owned: new Set(), votes: new Set() }; party.players.push(p); }
+const me = () => party.players.find(p => meName && same(p.name, meName)) || null;
+function addMe() {
+  let p = me();
+  if (!p) { p = { name: meName, picks: new Set(), ready: new Set() }; party.players.push(p); }
   return p;
 }
-function persist() { history.replaceState(null, "", "#s=" + encode(party)); }
 
-// ---------- Affichage soirée ----------
-function showParty() {
-  document.getElementById("create").hidden = true;
-  const known = meName && party.players.some(p => p.name.toLowerCase() === meName.toLowerCase());
-  if (!known) { showJoin(); return; }
-  document.getElementById("join").hidden = true;
-  document.getElementById("party").hidden = false;
-  document.getElementById("mine-title").textContent = "Les jeux de " + meName;
-  const othersChose = party.players.some(p => p.name.toLowerCase() !== meName.toLowerCase() && (p.owned.size || p.votes.size));
-  setView(othersChose ? "group" : "all");
-}
+// ---------- Écrans ----------
+function show(id) { ["create", "join", "party"].forEach(x => document.getElementById(x).hidden = x !== id); }
+
+function showCreate() { show("create"); document.getElementById("first-name").value = lastPseudo; }
+document.getElementById("create-btn").addEventListener("click", () => {
+  const name = document.getElementById("party-name").value.trim() || "Soirée LAN";
+  const n = document.getElementById("first-name").value.trim();
+  if (!n) { document.getElementById("first-name").focus(); return; }
+  party = { name, players: [] };
+  setMe(n); addMe(); persist(); showParty();
+});
+
 function showJoin() {
   setMe("");
-  document.getElementById("party").hidden = true;
-  document.getElementById("join").hidden = false;
+  show("join");
   document.getElementById("join-title").textContent = "Rejoindre « " + party.name + " »";
   const names = party.players.map(p => p.name);
   document.getElementById("join-who").textContent = names.length
     ? (names.length > 1 ? names.slice(0, -1).join(", ") + " et " + names.at(-1) + " ont" : names[0] + " a")
-      + " déjà choisi. Entrez votre pseudo pour ajouter vos jeux."
-    : "Entrez votre pseudo pour ajouter vos jeux.";
+      + " déjà choisi. Entrez votre pseudo pour ajouter vos choix."
+    : "Entrez votre pseudo pour ajouter vos choix.";
   const sum = document.getElementById("join-summary"); sum.replaceChildren();
   for (const p of party.players) {
     const li = document.createElement("li");
     const who = document.createElement("strong"); who.textContent = p.name + " : ";
-    const names = [...p.owned].map(id => byId.get(id).name).sort((a, b) => a.localeCompare(b, "fr"));
+    const names = [...p.picks].map(id => byId.get(id).name).sort((a, b) => a.localeCompare(b, "fr"));
     const what = document.createElement("span");
-    what.textContent = names.length ? names.slice(0, 8).join(", ") + (names.length > 8 ? " et " + (names.length - 8) + " autres" : "") : "aucun jeu payant coché pour l'instant";
+    what.textContent = names.length ? names.slice(0, 8).join(", ") + (names.length > 8 ? " et " + (names.length - 8) + " autres" : "") : "rien choisi pour l'instant";
     li.append(who, what); sum.append(li);
   }
   const list = document.getElementById("join-list"); list.replaceChildren();
@@ -280,96 +272,109 @@ function showJoin() {
 function join() {
   const n = document.getElementById("join-name").value.trim();
   if (!n) { document.getElementById("join-name").focus(); return; }
-  setMe(n); mePlayer(true); persist(); showParty();
+  setMe(n); addMe(); persist(); showParty();
 }
 document.getElementById("join-btn").addEventListener("click", join);
 document.getElementById("join-name").addEventListener("keydown", e => { if (e.key === "Enter") join(); });
 document.getElementById("switch-btn").addEventListener("click", showJoin);
-function renderAll() { renderHeader(); renderOwned(); renderResults(); }
+
+function showParty() {
+  if (!me()) { showJoin(); return; }
+  show("party");
+  document.getElementById("mine-title").textContent = "Les choix de " + me().name;
+  const othersChose = party.players.some(p => p !== me() && p.picks.size);
+  setView(othersChose ? "group" : "all");
+}
+
+// ---------- Calculs ----------
+let offline = false;
+function computeProgramme() {
+  const n = party.players.length;
+  const need = Math.max(1, Math.ceil(n / 2)); // choisi par au moins la moitié du groupe
+  const count = new Map();
+  party.players.forEach(p => p.picks.forEach(id => count.set(id, (count.get(id) || 0) + 1)));
+  const fits = g => n < 2 || (n >= g.min && n <= g.max);
+  const net = g => !offline || g.modes.some(m => m === "l" || m === "e");
+  const prog = [], other = [];
+  for (const [id, c] of count) {
+    const g = byId.get(id);
+    if (!net(g)) continue;
+    if (c >= need && fits(g)) prog.push(g); else other.push(g);
+  }
+  const rank = (a, b) => count.get(b.id) - count.get(a.id) || a.name.localeCompare(b.name, "fr");
+  return { prog: prog.sort(rank), other: other.sort(rank), count, need, n, fits };
+}
+
+// ---------- Rendu ----------
+function renderAll() { renderHeader(); renderPicks(); renderProgramme(); }
 
 function renderHeader() {
   document.getElementById("party-title").textContent = party.name;
-  const n = party.players.length;
-  document.getElementById("party-count").textContent = n + (n > 1 ? " joueurs" : " joueur");
+  document.getElementById("party-count").textContent = plural(party.players.length, "joueur", "joueurs");
+  const { prog } = computeProgramme();
   const box = document.getElementById("players"); box.replaceChildren();
   for (const p of party.players) {
     const chip = document.createElement("span");
-    chip.className = "player" + (p.name.toLowerCase() === meName.trim().toLowerCase() ? " me" : "");
+    chip.className = "player" + (p === me() ? " me" : "");
     const label = document.createElement("span"); label.textContent = p.name;
-    const count = document.createElement("small"); count.textContent = plural(p.owned.size, "jeu", "jeux");
+    const readyN = prog.filter(g => p.ready.has(g.id)).length;
+    const count = document.createElement("small");
+    count.textContent = prog.length ? "prêt " + readyN + "/" + prog.length : plural(p.picks.size, "choix", "choix");
     const del = document.createElement("button"); del.type = "button"; del.textContent = "×";
     del.setAttribute("aria-label", "Retirer " + p.name + " de la soirée");
     del.addEventListener("click", () => {
-      if (del.dataset.confirm) {
-        party.players = party.players.filter(x => x !== p); persist(); showParty();
-      } else { del.dataset.confirm = "1"; del.textContent = "Retirer ?"; }
+      if (del.dataset.confirm) { party.players = party.players.filter(x => x !== p); persist(); showParty(); }
+      else { del.dataset.confirm = "1"; del.textContent = "Retirer ?"; }
     });
     chip.append(label, count, del); box.append(chip);
   }
 }
 
 let view = "all", q = "";
-function renderOwned() {
-  const me = mePlayer(false);
-  const list = document.getElementById("owned"); list.replaceChildren();
-  // Ce que les autres joueurs ont choisi, pour chaque jeu
-  const others = party.players.filter(p => p !== me);
-  const ownersOf = g => others.filter(p => p.owned.has(g.id)).map(p => p.name);
-  const wishersOf = g => others.filter(p => p.votes.has(g.id)).map(p => p.name);
+const VIEWS = { group: "show-group", all: "show-all", mine: "show-mine" };
+function setView(v) {
+  view = v;
+  Object.entries(VIEWS).forEach(([k, id]) => document.getElementById(id).setAttribute("aria-pressed", k === v));
+  renderAll();
+}
+Object.entries(VIEWS).forEach(([v, id]) => document.getElementById(id).addEventListener("click", () => setView(v)));
+
+function renderPicks() {
+  const m = me();
+  const others = party.players.filter(p => p !== m);
+  const pickersOf = g => others.filter(p => p.picks.has(g.id)).map(p => p.name);
   const pool = games.filter(g => {
     if (q && !g.key.includes(q)) return false;
-    if (view === "group") return ownersOf(g).length > 0 || wishersOf(g).length > 0;
-    if (view === "free") return g.free;
-    if (g.free) return false;
-    if (view === "mine") return !!(me && me.owned.has(g.id));
+    if (view === "group") return q ? true : pickersOf(g).length > 0; // une recherche fouille tout le catalogue
+    if (view === "mine") return !!(m && m.picks.has(g.id));
     return true;
   });
-  const weight = g => ownersOf(g).length * 2 + wishersOf(g).length;
-  if (view === "group" || view === "all") pool.sort((a, b) => weight(b) - weight(a) || a.name.localeCompare(b.name, "fr"));
+  if (view !== "mine") pool.sort((a, b) => pickersOf(b).length - pickersOf(a).length || a.name.localeCompare(b.name, "fr"));
+  const list = document.getElementById("picks"); list.replaceChildren();
   const frag = document.createDocumentFragment();
   for (const g of pool) {
-    const owners = ownersOf(g), wishers = wishersOf(g);
-    const row = document.createElement("div"); row.className = "row" + (owners.length ? " taken" : "");
-    const cb = document.createElement("input"); cb.type = "checkbox"; cb.id = "own-" + g.id;
-    cb.checked = g.free || !!(me && me.owned.has(g.id)); cb.disabled = g.free;
+    const pickers = pickersOf(g);
+    const row = document.createElement("div"); row.className = "row" + (pickers.length ? " taken" : "");
+    const cb = document.createElement("input"); cb.type = "checkbox"; cb.id = "pick-" + g.id;
+    cb.checked = !!(m && m.picks.has(g.id));
     cb.addEventListener("change", () => {
-      const p = mePlayer(true); if (!p) { askName(); cb.checked = false; return; }
-      cb.checked ? p.owned.add(g.id) : (p.owned.delete(g.id), p.votes.delete(g.id));
-      persist(); renderHeader(); renderResults(); updateMineCount();
-      if (view === "mine") renderOwned();
+      const p = addMe();
+      cb.checked ? p.picks.add(g.id) : p.picks.delete(g.id);
+      persist(); renderHeader(); renderProgramme(); updateMineCount();
+      if (view === "mine") renderPicks();
     });
     const nm = document.createElement("div"); nm.className = "nm";
-    const lab = document.createElement("label"); lab.htmlFor = cb.id; lab.textContent = g.name;
+    const lab = document.createElement("label"); lab.htmlFor = cb.id;
+    lab.textContent = g.name + (g.free ? " · gratuit" : "");
     nm.append(lab);
-    if (owners.length || wishers.length) {
-      const who = document.createElement("div"); who.className = "who";
-      if (owners.length) who.append("✓ " + owners.join(", "));
-      if (wishers.length) {
-        const w = document.createElement("span"); w.className = "wish";
-        w.textContent = (owners.length ? " · " : "") + "★ " + wishers.join(", ");
-        who.append(w);
-      }
-      nm.append(who);
-    }
+    if (pickers.length) { const who = document.createElement("div"); who.className = "who"; who.textContent = "✓ " + pickers.join(", "); nm.append(who); }
     const pl = document.createElement("span"); pl.className = "pl"; pl.textContent = g.min === g.max ? g.min + " j." : g.min + "–" + g.max;
-    const star = document.createElement("button"); star.type = "button"; star.className = "star"; star.textContent = "★";
-    star.setAttribute("aria-label", "J'ai envie de jouer à " + g.name);
-    star.setAttribute("aria-pressed", !!(me && me.votes.has(g.id)));
-    star.addEventListener("click", () => {
-      const p = mePlayer(true); if (!p) { askName(); return; }
-      if (p.votes.has(g.id)) p.votes.delete(g.id);
-      else {
-        if (p.votes.size >= 3) { toast("3 envies maximum : retirez une ★ d'abord."); return; }
-        p.votes.add(g.id); if (!g.free) p.owned.add(g.id);
-      }
-      persist(); renderAll();
-    });
-    row.append(cb, nm, pl, star); frag.append(row);
+    row.append(cb, nm, pl); frag.append(row);
   }
   if (!pool.length) {
     const e = document.createElement("p"); e.className = "hint"; e.style.padding = "12px";
-    e.textContent = view === "mine" ? "Vous n'avez encore coché aucun jeu."
-      : view === "group" ? "Les autres joueurs n'ont encore rien choisi. Passez sur « Tous les payants »."
+    e.textContent = view === "mine" ? "Vous n'avez encore choisi aucun jeu."
+      : view === "group" ? "Les autres joueurs n'ont encore rien choisi. Passez sur « Tous les jeux »."
       : "Aucun jeu ne correspond à cette recherche.";
     frag.append(e);
   }
@@ -377,41 +382,59 @@ function renderOwned() {
   updateMineCount();
 }
 function updateMineCount() {
-  const me = mePlayer(false);
-  document.getElementById("mine-count").textContent = me ? plural(me.owned.size, "jeu coché", "jeux cochés") + " · " + me.votes.size + "/3 ★" : "";
+  const m = me();
+  document.getElementById("mine-count").textContent = m ? plural(m.picks.size, "jeu choisi", "jeux choisis") : "";
 }
-function askName() { showJoin(); }
 
-let offline = false;
-function renderResults() {
-  const players = party.players;
-  const n = players.length;
-  const votes = new Map();
-  players.forEach(p => p.votes.forEach(id => votes.set(id, (votes.get(id) || 0) + 1)));
-  const fits = g => n >= g.min && n <= g.max || (n < 2 && g.min <= 2);
-  const net = g => !offline || g.modes.some(m => m === "l" || m === "e");
-  const ok = [], almost = [];
-  for (const g of games) {
-    if (!fits(g) || !net(g)) continue;
-    if (g.free) { ok.push(g); continue; }
-    const lacking = players.filter(p => !p.owned.has(g.id));
-    if (!lacking.length) ok.push(g);
-    else if (lacking.length === 1 && n > 2) almost.push([g, lacking[0].name]);
+function renderProgramme() {
+  const { prog, other, count, need, n, fits } = computeProgramme();
+  document.getElementById("prog-hint").textContent = !count.size
+    ? "Cochez des jeux dans la liste : ceux choisis par le groupe apparaîtront ici."
+    : prog.length
+      ? plural(prog.length, "jeu retenu", "jeux retenus") + (n > 1 ? " : choisis par au moins " + need + " joueur" + (need > 1 ? "s" : "") + " sur " + n + " et jouables à " + n + "." : ".")
+      : "Aucun jeu n'a encore été choisi par au moins " + need + " joueurs sur " + n + ".";
+  document.getElementById("prog").replaceChildren(...prog.map(g => card(g, count.get(g.id), true)));
+  document.getElementById("other-title").hidden = !other.length;
+  document.getElementById("other-hint").hidden = !other.length;
+  document.getElementById("other-hint").textContent = "Choisis par moins de la moitié du groupe, ou pas jouables à " + n + ". Cochez-les aussi pour les faire entrer au programme.";
+  document.getElementById("other").replaceChildren(...other.map(g => card(g, count.get(g.id), false, fits(g) ? "" : "Max " + g.max + " joueurs")));
+  renderPrep(prog);
+}
+
+function renderPrep(prog) {
+  const m = me();
+  const list = document.getElementById("prep-list"); list.replaceChildren();
+  const left = prog.filter(g => !(m && m.ready.has(g.id))).length;
+  document.getElementById("prep-count").textContent = prog.length ? (left ? plural(left, "jeu", "jeux") + " à préparer" : "") : "";
+  if (!prog.length) {
+    const e = document.createElement("p"); e.className = "hint"; e.style.padding = "12px";
+    e.textContent = "Rien à préparer pour l'instant : le programme est vide.";
+    list.append(e); return;
   }
-  const rank = (a, b) => (votes.get(b.id) || 0) - (votes.get(a.id) || 0) || (a.free - b.free) || a.name.localeCompare(b.name, "fr");
-  ok.sort(rank); almost.sort((a, b) => rank(a[0], b[0]));
-  const paidOk = ok.filter(g => !g.free).length;
-  document.getElementById("results-hint").textContent = n < 2
-    ? "Invitez au moins un autre joueur pour voir les jeux en commun. En attendant, voici les jeux gratuits jouables à deux."
-    : plural(ok.length, "jeu", "jeux") + " pour " + n + " joueurs, dont " + plural(paidOk, "payant", "payants") + " que tout le monde possède. Les jeux avec le plus d'★ passent en premier, puis les payants.";
-  fill("ok", ok.map(g => card(g, votes.get(g.id) || 0)));
-  const at = document.getElementById("almost-title");
-  at.hidden = !almost.length;
-  fill("almost", almost.slice(0, 24).map(([g, who]) => card(g, votes.get(g.id) || 0, who)));
+  if (!left) {
+    const e = document.createElement("p"); e.className = "done"; e.style.padding = "12px 12px 0";
+    e.textContent = "Vous êtes prêt pour tout le programme.";
+    list.append(e);
+  }
+  for (const g of prog) {
+    const row = document.createElement("div"); row.className = "row";
+    const cb = document.createElement("input"); cb.type = "checkbox"; cb.id = "ready-" + g.id;
+    cb.checked = !!(m && m.ready.has(g.id));
+    cb.addEventListener("change", () => {
+      const p = addMe(); cb.checked ? p.ready.add(g.id) : p.ready.delete(g.id);
+      persist(); renderHeader(); renderProgramme();
+    });
+    const nm = document.createElement("div"); nm.className = "nm";
+    const lab = document.createElement("label"); lab.htmlFor = cb.id; lab.textContent = g.name;
+    const sub = document.createElement("div"); sub.className = "hint";
+    sub.textContent = (g.free ? "Gratuit" : "Payant") + " · installé et à jour";
+    nm.append(lab, sub);
+    const a = document.createElement("a"); a.href = g.url; a.target = "_blank"; a.rel = "noopener"; a.textContent = "Page du jeu";
+    row.append(cb, nm, a); list.append(row);
+  }
 }
-function fill(id, nodes) { const el = document.getElementById(id); el.replaceChildren(...nodes); }
 
-function card(g, v, missing) {
+function card(g, picks, inProg, note) {
   const a = document.createElement("a"); a.className = "game"; a.href = g.url; a.target = "_blank"; a.rel = "noopener";
   const cover = document.createElement("div"); cover.className = "cover";
   const ini = document.createElement("span"); ini.className = "initials";
@@ -432,10 +455,21 @@ function card(g, v, missing) {
   top.append(h, pl); body.append(top);
   const tags = document.createElement("div"); tags.className = "tags";
   const price = document.createElement("span"); price.className = "tag price " + (g.free ? "free" : "paid");
-  price.textContent = g.free ? "Gratuit" : "Payant"; tags.append(price);
-  if (v) { const s = document.createElement("span"); s.className = "votes"; s.textContent = "★ " + v; tags.append(s); }
-  body.append(tags);
-  if (missing) { const m = document.createElement("div"); m.className = "missing"; m.textContent = "Il manque à " + missing; body.append(m); }
+  price.textContent = g.free ? "Gratuit" : "Payant";
+  const pk = document.createElement("span"); pk.className = "picked";
+  pk.textContent = "choisi par " + picks + "/" + party.players.length;
+  tags.append(price, pk); body.append(tags);
+  if (note) { const nt = document.createElement("div"); nt.className = "hint"; nt.textContent = note; body.append(nt); }
+  if (inProg) {
+    const r = document.createElement("div"); r.className = "ready";
+    for (const p of party.players) {
+      const s = document.createElement("span"); const ok = p.ready.has(g.id);
+      s.className = ok ? "ok" : ""; s.textContent = (ok ? "✓ " : "○ ") + p.name;
+      s.title = ok ? p.name + " est prêt" : p.name + " doit encore l'installer ou le mettre à jour";
+      r.append(s);
+    }
+    body.append(r);
+  }
   const md = document.createElement("div"); md.className = "modes"; md.textContent = g.modes.map(m => MODES[m]).join(" · ");
   body.append(md);
   a.append(cover, body);
@@ -449,36 +483,23 @@ function toast(msg) {
   clearTimeout(toastTimer); toastTimer = setTimeout(() => t.textContent = "", 4000);
 }
 async function share() {
-  const url = linkFor(party);
   persist();
-  try { await navigator.clipboard.writeText(url); toast("Lien copié. Collez-le dans le groupe."); }
-  catch {
-    toast("Copie impossible ici : le lien est dans la barre d'adresse.");
-  }
+  try { await navigator.clipboard.writeText(linkFor(party)); toast("Lien copié. Collez-le dans le groupe."); }
+  catch { toast("Copie impossible ici : copiez le lien dans la barre d'adresse."); }
 }
 document.getElementById("share-btn").addEventListener("click", share);
-document.getElementById("save-btn").addEventListener("click", () => {
-  if (!mePlayer(false)) { const p = mePlayer(true); if (!p) { askName(); return; } }
-  renderAll(); share();
-});
-document.getElementById("owned-search").addEventListener("input", e => { q = norm(e.target.value.trim()); renderOwned(); });
-const VIEWS = { group: "show-group", all: "show-all", mine: "show-mine", free: "show-free" };
-function setView(v) {
-  view = v;
-  Object.entries(VIEWS).forEach(([k, id]) => document.getElementById(id).setAttribute("aria-pressed", k === v));
-  renderAll();
-}
-Object.entries(VIEWS).forEach(([v, id]) => document.getElementById(id).addEventListener("click", () => setView(v)));
+document.getElementById("save-btn").addEventListener("click", () => { addMe(); renderAll(); share(); });
+document.getElementById("pick-search").addEventListener("input", e => { q = norm(e.target.value.trim()); renderPicks(); });
 document.getElementById("offline").addEventListener("click", e => {
-  offline = !offline; e.currentTarget.setAttribute("aria-pressed", offline); renderResults();
+  offline = !offline; e.currentTarget.setAttribute("aria-pressed", offline); renderHeader(); renderProgramme();
 });
 document.getElementById("merge-btn").addEventListener("click", () => {
   const other = fromUrl(document.getElementById("merge-input").value);
   if (!other) { toast("Ce lien ne contient pas de soirée."); return; }
   for (const op of other.players) {
-    const p = party.players.find(x => x.name.toLowerCase() === op.name.toLowerCase());
+    const p = party.players.find(x => same(x.name, op.name));
     if (!p) party.players.push(op);
-    else { op.owned.forEach(id => p.owned.add(id)); if (op.votes.size) p.votes = op.votes; }
+    else { op.picks.forEach(id => p.picks.add(id)); op.ready.forEach(id => p.ready.add(id)); }
   }
   document.getElementById("merge-input").value = "";
   persist(); renderAll(); toast("Liens fusionnés.");

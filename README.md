@@ -20,4 +20,4 @@ Tout est dans `games.js`, une ligne par jeu :
 
 ## Soirée LAN
 
-La page `soiree.html` permet à un groupe de trouver les jeux auxquels tout le monde peut jouer. L'organisateur crée la soirée, chacun coche les jeux payants qu'il possède et met jusqu'à 3 ★ sur ses envies, puis renvoie le lien au groupe. Le site affiche les jeux jouables par tous (gratuits ou possédés par chacun) et ceux où il ne manque qu'un joueur. Toute la soirée est stockée dans le lien, sans serveur.
+La page `soiree.html` sert à choisir ensemble les jeux d'une soirée pour que chacun les installe et les mette à jour avant d'arriver. L'organisateur crée la soirée et envoie le lien ; chaque joueur entre son pseudo, coche les jeux auxquels il veut jouer (gratuits ou payants) et renvoie le lien. Les jeux choisis par au moins la moitié du groupe et jouables au nombre de joueurs forment le programme. Dans « Ma préparation », chacun coche les jeux installés et à jour, et tout le monde voit qui est prêt. Toute la soirée est stockée dans le lien, sans serveur.
