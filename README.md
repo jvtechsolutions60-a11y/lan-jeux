@@ -15,7 +15,8 @@ Tout est dans `games.js`, une ligne par jeu :
 - types : `tir strategie course party coop combat survie sport rpg plateforme horreur societe moba` (plusieurs séparés par un espace)
 - gratuit : `1` gratuit, `0` payant
 - modes : `l` réseau local (LAN), `e` même écran, `o` internet requis
-- lien : le numéro Steam du jeu (ex. `730` pour Counter-Strike 2, visible dans l'adresse de sa page Steam) pour afficher son image et ouvrir sa page ; sinon l'adresse du site officiel entre guillemets, ou `""` pour une simple recherche Steam
+- lien : le numéro Steam du jeu (ex. `730` pour Counter-Strike 2, visible dans l'adresse de sa page Steam) pour afficher son image et ouvrir sa page ; sinon l'adresse du site officiel entre guillemets, ou `""` pour une simple recherche Steam ; ou `[numéro Steam, "adresse"]` pour garder l'image Steam mais ouvrir une autre boutique (ex. Rocket League sur Epic)
+- autres boutiques : la boutique principale est déduite du lien ; pour indiquer qu'un jeu est aussi sur Epic, GOG, Battle.net, EA app, Ubisoft ou Xbox, ajoutez son nom dans la liste `AUSSI` en bas de `games.js`
 - description : une phrase courte
 
 ## Soirée LAN

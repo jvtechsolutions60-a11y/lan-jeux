@@ -2,7 +2,8 @@
 // [nom, joueurs min, joueurs max, types, gratuit (1) ou payant (0), modes, lien, description]
 // types : tir, strategie, course, party, coop, combat, survie, sport, rpg, plateforme, horreur, societe, moba
 // modes : l = réseau local (LAN), e = même écran, o = internet requis
-// lien : numéro Steam (appid) pour la page Steam et l'image, adresse web pour un autre site, vide pour une recherche Steam
+// lien : numéro Steam (appid) pour la page Steam et l'image, adresse web pour un autre site, vide pour une recherche Steam,
+//        ou [appid, adresse] pour garder l'image Steam mais envoyer vers une autre boutique
 window.GAMES = [
   // Tir
   ["Counter-Strike 2", 2, 10, "tir", 1, "lo", 730, "Le FPS tactique de référence : terroristes contre antiterroristes en 5v5."],
@@ -65,7 +66,7 @@ window.GAMES = [
   ["F1 24", 2, 20, "course sport", 0, "eo", 2488620, "La simulation officielle de Formule 1."],
 
   // Sport
-  ["Rocket League", 2, 8, "sport course", 1, "eo", 252950, "Du foot avec des voitures, gratuit."],
+  ["Rocket League", 2, 8, "sport course", 1, "eo", [252950, "https://store.epicgames.com/fr/p/rocket-league"], "Du foot avec des voitures, gratuit."],
   ["Rematch", 2, 10, "sport", 0, "o", 2138720, "Foot en 5v5 où chaque joueur contrôle un seul footballeur."],
   ["Windjammers 2", 2, 4, "sport party", 0, "eo", 1114290, "Frisbee arcade en 1v1 ou 2v2, rapide et nerveux."],
   ["Lethal League Blaze", 2, 4, "sport combat", 0, "eo", 553310, "Renvoyer une balle de plus en plus rapide pour éliminer les autres."],
@@ -80,7 +81,7 @@ window.GAMES = [
   ["Pummel Party", 2, 8, "party", 0, "eo", 880940, "Jeu de plateau et mini-jeux, très destructeur pour les amitiés."],
   ["Gang Beasts", 2, 8, "party combat", 0, "eo", 285900, "Bagarre molle entre personnages gélatineux."],
   ["Human: Fall Flat", 2, 8, "party coop plateforme", 0, "eo", 477160, "Puzzles physiques avec des personnages tout mous."],
-  ["Fall Guys", 2, 4, "party", 1, "o", 1097150, "Course d'obstacles géante et colorée, gratuit."],
+  ["Fall Guys", 2, 4, "party", 1, "o", [1097150, "https://store.epicgames.com/fr/p/fall-guys"], "Course d'obstacles géante et colorée, gratuit."],
   ["Among Us", 4, 15, "party", 0, "o", 945360, "Trouver l'imposteur dans l'équipage."],
   ["The Jackbox Party Pack 7", 3, 8, "party", 0, "e", 1211630, "Jeux d'ambiance à jouer avec son téléphone comme manette."],
   ["Stick Fight: The Game", 2, 4, "party combat", 0, "eo", 674940, "Bagarre physique entre bonhommes bâtons."],
@@ -292,7 +293,7 @@ window.GAMES = [
   ["Euro Truck Simulator 2", 2, 8, "course", 0, "o", 227300, "Rouler en convoi de camions à travers l'Europe."],
 
   // Ajouts v2 : sport
-  ["EA SPORTS FC 26", 2, 4, "sport", 0, "eo", "", "Le jeu de foot d'EA, en local ou en ligne."],
+  ["EA SPORTS FC 26", 2, 4, "sport", 0, "eo", "https://www.ea.com/fr/games/ea-sports-fc", "Le jeu de foot d'EA, en local ou en ligne."],
   ["NBA 2K26", 2, 10, "sport", 0, "eo", 3472040, "Le jeu de basket NBA."],
   ["eFootball", 2, 4, "sport", 1, "eo", 1665460, "Le foot de Konami, gratuit."],
   ["Super Mega Baseball 4", 2, 4, "sport", 0, "eo", 1487210, "Baseball arcade accessible."],
@@ -439,4 +440,54 @@ window.GAMES = [
   ["Magic: The Gathering Arena", 2, 2, "societe", 1, "o", 2141910, "Magic en ligne."],
   ["MARVEL SNAP", 2, 2, "societe", 1, "o", 1997040, "Jeu de cartes rapide."],
   ["Yu-Gi-Oh! Master Duel", 2, 2, "societe", 1, "o", 1449850, "Yu-Gi-Oh! en ligne."],
+  ["Teamfight Tactics", 2, 8, "strategie", 1, "o", "https://teamfighttactics.leagueoflegends.com/", "Auto-battler de Riot : on recrute des champions, ils combattent seuls."],
+  ["Warcraft II: Battle.net Edition", 2, 8, "strategie", 0, "lo", "https://www.gog.com/game/warcraft_2_battlenet_edition", "Le Warcraft orques contre humains des LAN des années 90."],
+  ["BombParty (JKLM.FUN)", 2, 16, "party societe", 1, "o", "https://jklm.fun/", "Trouver vite un mot contenant les lettres imposées avant que la bombe explose, dans le navigateur."],
+  ["Smash Karts", 2, 8, "course party", 1, "o", "https://smashkarts.io/", "Karts armés en arène, dans le navigateur, gratuit."],
+  ["Shell Shockers", 2, 18, "tir party", 1, "o", "https://shellshock.io/", "FPS d'œufs armés, dans le navigateur, gratuit."],
+  ["Agar.io", 2, 50, "party", 1, "o", "https://agar.io/", "Une cellule qui mange les plus petites, dans le navigateur."],
 ];
+
+// Boutiques où trouver chaque jeu. La boutique principale vient du lien ;
+// AUSSI liste les autres boutiques connues (steam, epic, gog, bnet, ea, ubi, xbox, riot).
+window.STORES = {
+  steam: "Steam", epic: "Epic", gog: "GOG", bnet: "Battle.net", ea: "EA app", ubi: "Ubisoft",
+  xbox: "Xbox (PC)", riot: "Riot", web: "Navigateur", site: "Site officiel"
+};
+window.AUSSI = {
+  steam: ["EA SPORTS FC 26"],
+  epic: ["Borderlands 2", "Warframe", "Destiny 2", "Sid Meier's Civilization VI", "Sid Meier's Civilization VII", "Trackmania",
+    "Need for Speed Hot Pursuit Remastered", "F1 24", "Among Us", "Satisfactory", "Path of Exile", "Grand Theft Auto V",
+    "Red Dead Redemption 2", "Apex Legends", "Marvel Rivals", "Tom Clancy's The Division 2", "Anno 1800",
+    "Mount & Blade II: Bannerlord", "Untitled Goose Game", "EA SPORTS FC 26", "Disney Speedstorm", "Dead by Daylight",
+    "Overcooked! All You Can Eat", "Predecessor", "Brawlhalla"],
+  gog: ["Stardew Valley", "Terraria", "Divinity: Original Sin 2", "Baldur's Gate 3", "Grim Dawn", "Titan Quest Anniversary Edition",
+    "Cuphead", "Shovel Knight: Treasure Trove", "Trine 4: The Nightmare Prince", "Trine 5: A Clockwork Conspiracy", "Factorio",
+    "No Man's Sky", "Supreme Commander: Forged Alliance", "Neverwinter Nights: Enhanced Edition", "Baldur's Gate: Enhanced Edition",
+    "Icewind Dale: Enhanced Edition", "GWENT: The Witcher Card Game", "Mount & Blade: Warband", "Mount & Blade II: Bannerlord",
+    "Worms Armageddon", "Stronghold Crusader HD"],
+  bnet: ["Diablo IV", "Overwatch 2"],
+  ea: ["Titanfall 2", "Need for Speed Hot Pursuit Remastered", "Burnout Paradise Remastered", "F1 24", "It Takes Two", "Split Fiction",
+    "A Way Out", "Battlefield 4", "Battlefield 6", "Apex Legends", "Command & Conquer Remastered Collection", "Need for Speed Unbound",
+    "Need for Speed Heat", "GRID Legends", "DIRT 5", "DiRT Rally 2.0", "Unravel Two", "Super Mega Baseball 4"],
+  ubi: ["Trackmania", "For Honor", "Rainbow Six Siege X", "Tom Clancy's The Division 2", "Tom Clancy's Ghost Recon Wildlands",
+    "Far Cry 5", "Anno 1800", "Riders Republic", "Rayman Legends", "Rayman Origins"],
+  xbox: ["Halo: The Master Chief Collection", "Halo Infinite", "Sea of Thieves", "Grounded", "Grounded 2", "Forza Horizon 5",
+    "Age of Empires II: Definitive Edition", "Age of Empires IV", "Age of Mythology: Retold", "Age of Empires: Definitive Edition",
+    "Age of Empires III: Definitive Edition", "Halo Wars: Definitive Edition", "Minecraft Dungeons", "Diablo IV", "Palworld",
+    "Valheim", "ASTRONEER", "No Man's Sky", "Among Us"]
+};
+const WEB = /garticphone|skribbl|codenames\.game|krunker|boardgamearena|lichess|jklm|smashkarts|shellshock|agar\.io/;
+// Renvoie { appid, url, stores } pour un jeu, à partir de son nom et de son lien.
+window.gameLinks = (name, link) => {
+  let appid = null, url = link, main;
+  if (Array.isArray(link)) [appid, url] = link;
+  else if (typeof link === "number") { appid = link; url = "https://store.steampowered.com/app/" + link + "/"; main = "steam"; }
+  if (!url) { url = "https://store.steampowered.com/search/?term=" + encodeURIComponent(name); main = "steam"; }
+  if (!main) main = /epicgames|fortnite/.test(url) ? "epic" : /gog\.com/.test(url) ? "gog" : /blizzard/.test(url) ? "bnet"
+    : /\bea\.com/.test(url) ? "ea" : /ubisoft/.test(url) ? "ubi" : /minecraft\.net|xbox/.test(url) ? "xbox"
+    : /riotgames|playvalorant|leagueoflegends/.test(url) ? "riot" : WEB.test(url) ? "web" : "site";
+  const stores = [main];
+  for (const [k, list] of Object.entries(window.AUSSI)) if (k !== main && list.includes(name)) stores.push(k);
+  return { appid, url, stores };
+};

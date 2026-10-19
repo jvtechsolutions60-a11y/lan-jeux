@@ -2,11 +2,11 @@
 <html lang="fr">
 <title>LAN &amp; Jeux</title>
 <meta charset="utf-8">
-<meta name="description" content="Près de 400 jeux multijoueurs à jouer en LAN, à filtrer par nombre de joueurs, type de jeu, prix et connexion.">
+<meta name="description" content="Près de 400 jeux multijoueurs à jouer en LAN, à filtrer par nombre de joueurs, type de jeu, boutique, prix et connexion.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="LAN &amp; Jeux">
 <meta property="og:title" content="LAN &amp; Jeux : quel jeu lancer en LAN ?">
-<meta property="og:description" content="Près de 400 jeux multijoueurs à jouer en LAN, à filtrer par nombre de joueurs, type de jeu, prix et connexion.">
+<meta property="og:description" content="Près de 400 jeux multijoueurs à jouer en LAN, à filtrer par nombre de joueurs, type de jeu, boutique, prix et connexion.">
 <meta property="og:url" content="https://jvtechsolutions60-a11y.github.io/lan-jeux/">
 <meta property="og:image" content="https://jvtechsolutions60-a11y.github.io/lan-jeux/og.png">
 <meta property="og:image:width" content="1200">
@@ -60,6 +60,10 @@
       <div class="label" id="lbl-types">Type de jeu</div>
       <div class="chips" id="types" role="group" aria-labelledby="lbl-types"></div>
     </div>
+    <div class="group">
+      <div class="label" id="lbl-stores">Boutique</div>
+      <div class="chips" id="stores" role="group" aria-labelledby="lbl-stores"></div>
+    </div>
     <div class="row">
       <div class="group">
         <div class="label" id="lbl-price">Prix</div>
@@ -78,10 +82,10 @@
   </div>
   <div class="grid" id="grid"></div>
 
-  <footer><a href="https://github.com/jvtechsolutions60-a11y/lan-jeux/issues/new" target="_blank" rel="noopener">Proposer un jeu ou signaler une erreur</a> · Images et pages des jeux : Steam. Les nombres de joueurs indiqués sont ceux du multijoueur. Un jeu marqué « Internet » demande une connexion, même en LAN.</footer>
+  <footer><a href="https://github.com/jvtechsolutions60-a11y/lan-jeux/issues/new" target="_blank" rel="noopener">Proposer un jeu ou signaler une erreur</a> · Images : Steam. Boutiques indiquées : les principales, la liste n'est pas exhaustive. Les nombres de joueurs indiqués sont ceux du multijoueur. Un jeu marqué « Internet » demande une connexion, même en LAN.</footer>
 </div>
 
-<script src="games.js?v=6"></script>
+<script src="games.js?v=7"></script>
 <script>
 const TYPES = {
   tir: "Tir", strategie: "Stratégie", course: "Course", party: "Party game", coop: "Coopération",
@@ -92,14 +96,13 @@ const MODES = { l: "LAN", e: "Même écran", o: "Internet" };
 const PLAYERS = [["2", 2], ["3", 3], ["4", 4], ["5 et +", 5]];
 
 const norm = t => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+const STORES = window.STORES;
 const games = (window.GAMES || []).map(([name, min, max, types, free, modes, link, desc]) => ({
   name, min, max, desc: desc || "", types: types.split(" "), free: !!free, modes: modes.split(""),
-  appid: typeof link === "number" ? link : null, key: norm(name),
-  url: typeof link === "number" ? "https://store.steampowered.com/app/" + link + "/"
-    : link || "https://store.steampowered.com/search/?term=" + encodeURIComponent(name)
+  key: norm(name), ...window.gameLinks(name, link)
 }));
 
-const state = { players: null, types: new Set(), price: null, offline: false, q: "", sort: "name" };
+const state = { players: null, types: new Set(), stores: new Set(), price: null, offline: false, q: "", sort: "name" };
 const SORTS = {
   name: (a, b) => a.name.localeCompare(b.name, "fr"),
   max: (a, b) => b.max - a.max || a.name.localeCompare(b.name, "fr"),
@@ -125,6 +128,11 @@ function renderFilters() {
     state.types.has(key) ? state.types.delete(key) : state.types.add(key); update();
   })));
 
+  const st = document.getElementById("stores"); st.replaceChildren();
+  Object.entries(STORES).forEach(([key, label]) => st.append(chip(label, state.stores.has(key), () => {
+    state.stores.has(key) ? state.stores.delete(key) : state.stores.add(key); update();
+  })));
+
   const pr = document.getElementById("price"); pr.replaceChildren();
   [["Gratuit", "free"], ["Payant", "paid"]].forEach(([label, v]) => pr.append(chip(label, state.price === v, () => {
     state.price = state.price === v ? null : v; update();
@@ -140,6 +148,7 @@ function matches(g) {
     if (n === 5 ? g.max < 5 : (n < g.min || n > g.max)) return false;
   }
   if (state.types.size && !g.types.some(t => state.types.has(t))) return false;
+  if (state.stores.size && !g.stores.some(s => state.stores.has(s))) return false;
   if (state.price === "free" && !g.free) return false;
   if (state.price === "paid" && g.free) return false;
   if (state.offline && !g.modes.some(m => m === "l" || m === "e")) return false;
@@ -177,7 +186,8 @@ function card(g) {
     <p class="desc"></p>
     <div class="tags"><span class="tag price ${g.free ? "free" : "paid"}">${g.free ? "Gratuit" : "Payant"}</span>
     ${g.types.map(t => `<span class="tag">${TYPES[t]}</span>`).join("")}</div>
-    <div class="modes">${g.modes.map(m => MODES[m]).join(" · ")}</div>`;
+    <div class="modes">${g.modes.map(m => MODES[m]).join(" · ")}</div>
+    <div class="modes">Sur ${g.stores.map(s => STORES[s]).join(", ")}</div>`;
   body.querySelector("h2").textContent = g.name;
   const d = body.querySelector(".desc");
   if (g.desc) d.textContent = g.desc; else d.remove();
@@ -218,7 +228,7 @@ document.getElementById("sort").addEventListener("change", e => { state.sort = e
 
 function update() {
   renderFilters(); renderGrid();
-  const n = (state.players !== null) + state.types.size + (state.price !== null) + state.offline;
+  const n = (state.players !== null) + state.types.size + state.stores.size + (state.price !== null) + state.offline;
   document.getElementById("filters-n").textContent = n ? "(" + n + ")" : "";
 }
 document.getElementById("filters-toggle").addEventListener("click", e => {
@@ -227,7 +237,7 @@ document.getElementById("filters-toggle").addEventListener("click", e => {
   e.currentTarget.setAttribute("aria-expanded", !f.classList.contains("collapsed"));
 });
 document.getElementById("reset").addEventListener("click", () => {
-  state.players = null; state.types.clear(); state.price = null; state.offline = false;
+  state.players = null; state.types.clear(); state.stores.clear(); state.price = null; state.offline = false;
   state.q = ""; document.getElementById("search").value = ""; update();
 });
 update();

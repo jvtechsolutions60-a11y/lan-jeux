@@ -224,20 +224,18 @@ body { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
   </div>
 </div>
 
-<script src="games.js?v=6"></script>
+<script src="games.js?v=7"></script>
 <script>
 // ---------- Données ----------
 const norm = t => t.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 const slug = t => norm(t).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 const MODES = { l: "LAN", e: "Même écran", o: "Internet" };
-const games = (window.GAMES || []).map(([name, min, max, types, free, modes, link]) => ({
-  name, min, max, free: !!free, modes: modes.split(""), key: norm(name),
-  appid: typeof link === "number" ? link : null,
-  // identifiant stable : numéro Steam en base 36, sinon nom simplifié
-  id: typeof link === "number" ? link.toString(36) : "~" + slug(name),
-  url: typeof link === "number" ? "https://store.steampowered.com/app/" + link + "/"
-    : link || "https://store.steampowered.com/search/?term=" + encodeURIComponent(name)
-})).sort((a, b) => a.name.localeCompare(b.name, "fr"));
+const games = (window.GAMES || []).map(([name, min, max, types, free, modes, link]) => {
+  const l = window.gameLinks(name, link);
+  return { name, min, max, free: !!free, modes: modes.split(""), key: norm(name), ...l,
+    // identifiant stable : numéro Steam en base 36, sinon nom simplifié
+    id: l.appid ? l.appid.toString(36) : "~" + slug(name) };
+}).sort((a, b) => a.name.localeCompare(b.name, "fr"));
 const byId = new Map(games.map(g => [g.id, g]));
 const plural = (n, one, many) => n + " " + (n > 1 ? many : one);
 const same = (a, b) => a.toLowerCase() === b.toLowerCase();
@@ -549,7 +547,7 @@ function renderPrep({ prog }) {
       persist(); renderAll();
     });
     const t = el("div", "txt");
-    t.append(el("span", "nm", g.name), el("span", "sub", on ? "Installé et à jour" : "À installer ou mettre à jour" + (g.free ? " · gratuit" : "")));
+    t.append(el("span", "nm", g.name), el("span", "sub", on ? "Installé et à jour" : "À installer ou mettre à jour" + (g.free ? " · gratuit" : "") + " · sur " + g.stores.map(k => window.STORES[k]).join(", ")));
     const a = document.createElement("a"); a.href = g.url; a.target = "_blank"; a.rel = "noopener"; a.textContent = "Page du jeu";
     a.addEventListener("click", e => e.stopPropagation());
     row.append(cb, thumb(g), t, a); list.append(row);
