@@ -25,6 +25,7 @@ La page `soiree.html` sert à choisir ensemble les jeux d'une soirée pour que c
 
 ## Versions
 
+- **2.3** (20/10/2026) : Gratuit / Payant passe en filtre principal (à côté du nombre de joueurs, visible aussi sur mobile), petits logos des boutiques sur les filtres, les jeux et l'onglet Préparer
 - **2.2** (19/10/2026) : filtre Boutique (Steam, Epic, GOG, Battle.net, EA app, Ubisoft, Xbox, Riot, navigateur), 394 jeux
 - **2.1** (17/10/2026) : ergonomie et design revus, aperçu des liens partagés, favicon, lien de signalement, catalogue allégé (388 jeux)
 - **2.0** (17/10/2026) : mode Soirée LAN (choisir, programme, préparer), sans serveur

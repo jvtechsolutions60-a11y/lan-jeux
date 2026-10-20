@@ -20,7 +20,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
-<link rel="stylesheet" href="style.css?v=5">
+<link rel="stylesheet" href="style.css?v=6">
 
 <div class="wrap">
   <header>
@@ -52,27 +52,27 @@
   </section>
 
   <section class="filters collapsed" id="filters" aria-label="Filtres">
+    <div class="row">
+      <div class="group">
+        <div class="label" id="lbl-players">Nombre de joueurs</div>
+        <div class="chips" id="players" role="group" aria-labelledby="lbl-players"></div>
+      </div>
+      <div class="group">
+        <div class="label" id="lbl-price">Prix</div>
+        <div class="chips" id="price" role="group" aria-labelledby="lbl-price"></div>
+      </div>
+    </div>
     <div class="group">
-      <div class="label" id="lbl-players">Nombre de joueurs</div>
-      <div class="chips" id="players" role="group" aria-labelledby="lbl-players"></div>
+      <div class="label" id="lbl-stores">Boutique</div>
+      <div class="chips" id="stores" role="group" aria-labelledby="lbl-stores"></div>
     </div>
     <div class="group">
       <div class="label" id="lbl-types">Type de jeu</div>
       <div class="chips" id="types" role="group" aria-labelledby="lbl-types"></div>
     </div>
     <div class="group">
-      <div class="label" id="lbl-stores">Boutique</div>
-      <div class="chips" id="stores" role="group" aria-labelledby="lbl-stores"></div>
-    </div>
-    <div class="row">
-      <div class="group">
-        <div class="label" id="lbl-price">Prix</div>
-        <div class="chips" id="price" role="group" aria-labelledby="lbl-price"></div>
-      </div>
-      <div class="group">
-        <div class="label" id="lbl-net">Connexion</div>
-        <div class="chips" id="net" role="group" aria-labelledby="lbl-net"></div>
-      </div>
+      <div class="label" id="lbl-net">Connexion</div>
+      <div class="chips" id="net" role="group" aria-labelledby="lbl-net"></div>
     </div>
   </section>
 
@@ -82,10 +82,10 @@
   </div>
   <div class="grid" id="grid"></div>
 
-  <footer><a href="https://github.com/jvtechsolutions60-a11y/lan-jeux/issues/new" target="_blank" rel="noopener">Proposer un jeu ou signaler une erreur</a> · Images : Steam. Boutiques indiquées : les principales, la liste n'est pas exhaustive. Les nombres de joueurs indiqués sont ceux du multijoueur. Un jeu marqué « Internet » demande une connexion, même en LAN. · <span class="version">Version 2.2 du 19/10/2026</span></footer>
+  <footer><a href="https://github.com/jvtechsolutions60-a11y/lan-jeux/issues/new" target="_blank" rel="noopener">Proposer un jeu ou signaler une erreur</a> · Images : Steam. Boutiques indiquées : les principales, la liste n'est pas exhaustive. Les nombres de joueurs indiqués sont ceux du multijoueur. Un jeu marqué « Internet » demande une connexion, même en LAN. · <span class="version">Version 2.3 du 20/10/2026</span></footer>
 </div>
 
-<script src="games.js?v=7"></script>
+<script src="games.js?v=8"></script>
 <script>
 const TYPES = {
   tir: "Tir", strategie: "Stratégie", course: "Course", party: "Party game", coop: "Coopération",
@@ -109,10 +109,11 @@ const SORTS = {
   free: (a, b) => (b.free - a.free) || a.name.localeCompare(b.name, "fr")
 };
 
-function chip(label, pressed, onClick, big) {
+function chip(label, pressed, onClick, big, icon) {
   const b = document.createElement("button");
   b.type = "button"; b.className = "chip" + (big ? " big" : "");
-  b.textContent = label; b.setAttribute("aria-pressed", pressed);
+  b.textContent = label;
+  if (icon) b.insertAdjacentHTML("afterbegin", icon); b.setAttribute("aria-pressed", pressed);
   b.addEventListener("click", onClick);
   return b;
 }
@@ -131,12 +132,12 @@ function renderFilters() {
   const st = document.getElementById("stores"); st.replaceChildren();
   Object.entries(STORES).forEach(([key, label]) => st.append(chip(label, state.stores.has(key), () => {
     state.stores.has(key) ? state.stores.delete(key) : state.stores.add(key); update();
-  })));
+  }, false, window.storeIcon(key))));
 
   const pr = document.getElementById("price"); pr.replaceChildren();
   [["Gratuit", "free"], ["Payant", "paid"]].forEach(([label, v]) => pr.append(chip(label, state.price === v, () => {
     state.price = state.price === v ? null : v; update();
-  })));
+  }, true)));
 
   const nt = document.getElementById("net"); nt.replaceChildren();
   nt.append(chip("Sans internet", state.offline, () => { state.offline = !state.offline; update(); }));
@@ -187,7 +188,7 @@ function card(g) {
     <div class="tags"><span class="tag price ${g.free ? "free" : "paid"}">${g.free ? "Gratuit" : "Payant"}</span>
     ${g.types.map(t => `<span class="tag">${TYPES[t]}</span>`).join("")}</div>
     <div class="modes">${g.modes.map(m => MODES[m]).join(" · ")}</div>
-    <div class="modes">Sur ${g.stores.map(s => STORES[s]).join(", ")}</div>`;
+    <div class="stores">${g.stores.map(s => `<span class="store">${window.storeIcon(s)}${STORES[s]}</span>`).join("")}</div>`;
   body.querySelector("h2").textContent = g.name;
   const d = body.querySelector(".desc");
   if (g.desc) d.textContent = g.desc; else d.remove();

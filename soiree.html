@@ -20,7 +20,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
-<link rel="stylesheet" href="style.css?v=5">
+<link rel="stylesheet" href="style.css?v=6">
 <style>
 body { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
 .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px; display: grid; gap: 14px; min-width: 0; }
@@ -214,7 +214,7 @@ body { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
     </div>
   </div>
 
-  <footer><a href="https://github.com/jvtechsolutions60-a11y/lan-jeux/issues/new" target="_blank" rel="noopener">Proposer un jeu ou signaler une erreur</a> · Rien n'est stocké sur un serveur : la soirée tient entièrement dans le lien. Images : Steam. · <span class="version">Version 2.2 du 19/10/2026</span></footer>
+  <footer><a href="https://github.com/jvtechsolutions60-a11y/lan-jeux/issues/new" target="_blank" rel="noopener">Proposer un jeu ou signaler une erreur</a> · Rien n'est stocké sur un serveur : la soirée tient entièrement dans le lien. Images : Steam. · <span class="version">Version 2.3 du 20/10/2026</span></footer>
 </div>
 
 <div class="sendbar" id="sendbar" hidden>
@@ -224,7 +224,7 @@ body { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
   </div>
 </div>
 
-<script src="games.js?v=7"></script>
+<script src="games.js?v=8"></script>
 <script>
 // ---------- Données ----------
 const norm = t => t.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
@@ -547,7 +547,8 @@ function renderPrep({ prog }) {
       persist(); renderAll();
     });
     const t = el("div", "txt");
-    t.append(el("span", "nm", g.name), el("span", "sub", on ? "Installé et à jour" : "À installer ou mettre à jour" + (g.free ? " · gratuit" : "") + " · sur " + g.stores.map(k => window.STORES[k]).join(", ")));
+    t.append(el("span", "nm", g.name), el("span", "sub", on ? "Installé et à jour" : "À installer ou mettre à jour" + (g.free ? " · gratuit" : "") + ""));
+    const sub = t.lastChild; sub.insertAdjacentHTML("beforeend", g.stores.map(k => ` <span class="store">${window.storeIcon(k)}${window.STORES[k]}</span>`).join(""));
     const a = document.createElement("a"); a.href = g.url; a.target = "_blank"; a.rel = "noopener"; a.textContent = "Page du jeu";
     a.addEventListener("click", e => e.stopPropagation());
     row.append(cb, thumb(g), t, a); list.append(row);
