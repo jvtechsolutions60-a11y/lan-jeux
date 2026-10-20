@@ -22,3 +22,11 @@ Tout est dans `games.js`, une ligne par jeu :
 ## Soirée LAN
 
 La page `soiree.html` sert à choisir ensemble les jeux d'une soirée pour que chacun les installe et les mette à jour avant d'arriver. L'organisateur crée la soirée et envoie le lien ; chaque joueur entre son pseudo, coche les jeux auxquels il veut jouer (gratuits ou payants) et renvoie le lien. Les jeux choisis par au moins la moitié du groupe et jouables au nombre de joueurs forment le programme. Dans « Ma préparation », chacun coche les jeux installés et à jour, et tout le monde voit qui est prêt. Toute la soirée est stockée dans le lien, sans serveur.
+
+## Versions
+
+- **2.2** (19/10/2026) : filtre Boutique (Steam, Epic, GOG, Battle.net, EA app, Ubisoft, Xbox, Riot, navigateur), 394 jeux
+- **2.1** (17/10/2026) : ergonomie et design revus, aperçu des liens partagés, favicon, lien de signalement, catalogue allégé (388 jeux)
+- **2.0** (17/10/2026) : mode Soirée LAN (choisir, programme, préparer), sans serveur
+- **1.1** (16/10/2026) : recherche, tri, jeu au hasard, images Steam, descriptions, 396 jeux
+- **1.0** (16/10/2026) : premier catalogue (149 jeux) avec filtres joueurs, type, prix, connexion
