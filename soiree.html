@@ -98,6 +98,8 @@ body { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
 .ready span { font-size: 11.5px; padding: 3px 8px; border-radius: 999px; background: var(--chip); color: var(--muted); }
 .ready span.ok { background: var(--free-bg); color: var(--free); }
 .pcard.dim { opacity: .85; }
+.pcard .veto { justify-self: start; font-size: 12.5px; color: var(--muted); }
+.pcard .veto:hover { color: var(--paid); }
 @media (max-width: 480px) { .pcard { grid-template-columns: 84px minmax(0, 1fr); gap: 10px; } .pcard .thumb { width: 84px; } }
 .section-title { font: 700 16px/1.2 var(--display); margin: 6px 0 0; }
 .done-msg { color: var(--free); font-weight: 600; }
@@ -214,7 +216,7 @@ body { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
     </div>
   </div>
 
-  <footer><a href="https://github.com/jvtechsolutions60-a11y/lan-jeux/issues/new" target="_blank" rel="noopener">Proposer un jeu ou signaler une erreur</a> · Rien n'est stocké sur un serveur : la soirée tient entièrement dans le lien. Images : Steam. · <span class="version">Version 2.3 du 20/10/2026</span></footer>
+  <footer><a href="https://github.com/jvtechsolutions60-a11y/lan-jeux/issues/new" target="_blank" rel="noopener">Proposer un jeu ou signaler une erreur</a> · Rien n'est stocké sur un serveur : la soirée tient entièrement dans le lien. Images : Steam. · <span class="version">Version 2.4 du 20/10/2026</span></footer>
 </div>
 
 <div class="sendbar" id="sendbar" hidden>
@@ -243,9 +245,9 @@ const range = g => g.min === g.max ? g.min + " j." : g.min + "–" + g.max + " j
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
 
 // ---------- Soirée dans le lien ----------
-// Format v2 : { v: 2, n: nom, p: [[pseudo, "choix.choix", "prêt.prêt"]] }
+// Format v3 : { v: 3, n: nom, p: [[pseudo, "choix.choix", "prêt.prêt", "veto"]] } (v2 : sans veto)
 function encode(party) {
-  const json = JSON.stringify({ v: 2, n: party.name, p: party.players.map(p => [p.name, [...p.picks].join("."), [...p.ready].join(".")]) });
+  const json = JSON.stringify({ v: 3, n: party.name, p: party.players.map(p => [p.name, [...p.picks].join("."), [...p.ready].join("."), p.veto]) });
   const bytes = new TextEncoder().encode(json);
   let bin = ""; bytes.forEach(b => bin += String.fromCharCode(b));
   return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
@@ -257,7 +259,8 @@ function decode(str) {
     const ids = s => String(s || "").split(".").filter(id => byId.has(id));
     return {
       name: String(d.n || "Soirée LAN").slice(0, 40),
-      players: (d.p || []).map(([n, a, b]) => ({ name: String(n).slice(0, 20), picks: new Set(ids(a)), ready: new Set(d.v === 2 ? ids(b) : []) }))
+      players: (d.p || []).map(([n, a, b, v]) => ({ name: String(n).slice(0, 20), picks: new Set(ids(a)), ready: new Set(d.v >= 2 ? ids(b) : []),
+        veto: d.v >= 3 && byId.has(v) ? v : "" }))
     };
   } catch { return null; }
 }
@@ -281,7 +284,7 @@ function setMe(n) {
 const me = () => party.players.find(p => meName && same(p.name, meName)) || null;
 function addMe() {
   let p = me();
-  if (!p) { p = { name: meName, picks: new Set(), ready: new Set() }; party.players.push(p); }
+  if (!p) { p = { name: meName, picks: new Set(), ready: new Set(), veto: "" }; party.players.push(p); }
   return p;
 }
 
@@ -397,14 +400,18 @@ function computeProgramme() {
   party.players.forEach(p => p.picks.forEach(id => count.set(id, (count.get(id) || 0) + 1)));
   const fits = g => n < 2 || (n >= g.min && n <= g.max);
   const net = g => !offline || g.modes.some(m => m === "l" || m === "e");
+  // Veto : chaque joueur peut écarter un jeu, qui sort alors du programme
+  const vetoBy = new Map();
+  party.players.forEach(p => { if (p.veto) vetoBy.set(p.veto, [...(vetoBy.get(p.veto) || []), p.name]); });
   const prog = [], other = [];
   for (const [id, c] of count) {
     const g = byId.get(id);
     if (!net(g)) continue;
-    (c >= need && fits(g) ? prog : other).push(g);
+    (c >= need && fits(g) && !vetoBy.has(id) ? prog : other).push(g);
   }
+  // Classement par votes : plus un jeu est choisi, plus il monte
   const rank = (a, b) => count.get(b.id) - count.get(a.id) || a.name.localeCompare(b.name, "fr");
-  return { prog: prog.sort(rank), other: other.sort(rank), count, need, n, fits };
+  return { prog: prog.sort(rank), other: other.sort(rank), count, need, n, fits, vetoBy };
 }
 
 // ---------- Rendu ----------
@@ -491,26 +498,36 @@ function renderPicks() {
   list.append(frag);
 }
 
-function renderProgramme({ prog, other, count, need, n, fits }) {
+function renderProgramme({ prog, other, count, need, n, fits, vetoBy }) {
   document.getElementById("prog-hint").textContent = !count.size
     ? "Le programme est vide. Cochez des jeux à l'étape 1 : ceux choisis par au moins la moitié du groupe apparaîtront ici."
     : prog.length
-      ? plural(prog.length, "jeu retenu", "jeux retenus") + (n > 1 ? ", choisis par au moins " + need + " joueur" + (need > 1 ? "s" : "") + " sur " + n + " et jouables à " + n + "." : ".")
+      ? plural(prog.length, "jeu retenu", "jeux retenus") + (n > 1 ? ", choisis par au moins " + need + " joueur" + (need > 1 ? "s" : "") + " sur " + n + " et jouables à " + n + ", du plus voté au moins voté." : ".")
+        + " Chacun peut écarter un jeu dont il ne veut pas (un veto par joueur)."
       : "Aucun jeu n'est encore choisi par au moins " + need + " joueurs sur " + n + ".";
-  document.getElementById("prog").replaceChildren(...prog.map(g => pcard(g, count.get(g.id), true)));
+  document.getElementById("prog").replaceChildren(...prog.map((g, i) => pcard(g, count.get(g.id), true, "", i + 1)));
   const hasOther = other.length > 0;
   document.getElementById("other-title").hidden = !hasOther;
   document.getElementById("other-hint").hidden = !hasOther;
-  document.getElementById("other-hint").textContent = "Pas assez choisis, ou pas jouables à " + n + ". Cochez-les à l'étape 1 pour les faire entrer au programme.";
-  document.getElementById("other").replaceChildren(...other.map(g => pcard(g, count.get(g.id), false, fits(g) ? "" : "Jouable jusqu'à " + g.max + " seulement")));
+  document.getElementById("other-hint").textContent = "Pas assez choisis, pas jouables à " + n + " ou écartés par un veto. Cochez-les à l'étape 1 pour les faire entrer au programme.";
+  document.getElementById("other").replaceChildren(...other.map(g => pcard(g, count.get(g.id), false,
+    vetoBy.has(g.id) ? "✕ écarté par " + vetoBy.get(g.id).join(", ") : fits(g) ? "" : "Jouable jusqu'à " + g.max + " seulement")));
 }
 
-function pcard(g, picks, inProg, note) {
+function vetoButton(g) {
+  const m = me(); const mine = !!(m && m.veto === g.id);
+  const b = el("button", "linkish veto", mine ? "Annuler mon veto" : "Écarter ce jeu"); b.type = "button";
+  b.title = mine ? "Remettre ce jeu en jeu" : m && m.veto ? "Votre veto passera de " + byId.get(m.veto).name + " à ce jeu" : "Vous ne voulez pas y jouer : il sort du programme";
+  b.addEventListener("click", () => { const p = addMe(); p.veto = mine ? "" : g.id; persist(); renderAll(); });
+  return b;
+}
+
+function pcard(g, picks, inProg, note, pos) {
   const c = el("article", "pcard" + (inProg ? "" : " dim"));
   const a = document.createElement("a"); a.href = g.url; a.target = "_blank"; a.rel = "noopener"; a.append(thumb(g));
   a.setAttribute("aria-label", "Page de " + g.name);
   const t = el("div", "txt");
-  const top = el("div", "top"); top.append(el("h3", "", g.name), el("span", "players", range(g)));
+  const top = el("div", "top"); top.append(el("h3", "", (pos ? pos + ". " : "") + g.name), el("span", "players", range(g)));
   t.append(top);
   t.append(el("span", "meta", (g.free ? "Gratuit" : "Payant") + " · choisi par " + picks + "/" + party.players.length + (note ? " · " + note : "")));
   if (inProg) {
@@ -527,6 +544,8 @@ function pcard(g, picks, inProg, note) {
     }
     t.append(bar, r);
   }
+  const m = me();
+  if (inProg || (m && m.veto === g.id)) t.append(vetoButton(g));
   c.append(a, t);
   return c;
 }
@@ -593,7 +612,7 @@ document.getElementById("merge-btn").addEventListener("click", () => {
   for (const op of other.players) {
     const p = party.players.find(x => same(x.name, op.name));
     if (!p) party.players.push(op);
-    else { op.picks.forEach(id => p.picks.add(id)); op.ready.forEach(id => p.ready.add(id)); }
+    else { op.picks.forEach(id => p.picks.add(id)); op.ready.forEach(id => p.ready.add(id)); if (op.veto) p.veto = op.veto; }
   }
   document.getElementById("merge-input").value = "";
   document.getElementById("mergebox").hidden = true;
